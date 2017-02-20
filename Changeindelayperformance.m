@@ -1,8 +1,7 @@
 clear all
 close all
+cd('C:\Users\peter\Desktop\Scripts\TrainingLogs')
 
-addpath(genpath('C:\Users\gillissen\Desktop\InternshipCédric\Scripts\Mouse'))
-cd('C:\Users\gillissen\Desktop\InternshipCédric\TrainingLogs')
 %% Select Mouse
 TrainingList = dir(fullfile(cd,'*.mat'));
 TrainingList_Parts = cellfun(@(X) strsplit(X,'_'), {TrainingList.name},'UniformOutput',false);
@@ -35,14 +34,14 @@ LongerPerf = NaN(length(Mice),length(Days));
 SmallerPerf = NaN(length(Mice),length(Days));
 ZeroCuePerf = NaN(length(Mice),length(Days));
 
-for Mouseidx = 1:length(Mice);
+for Mouseidx = 1:length(Mice)
     
     
     
-    for Dayidx = 1: length(Days);
+    for Dayidx = 1: length(Days)
         
         RTleft=[];RTright=[]; %Pre allocate Licks
-        ResponseCell = {}; %Preallocate for LOG.Reaction concatenation
+        ResponseCell = {}; %Preallocate for ResponseCell concatenation
         Side = {};
         Phase = {};
         Fileidx = find(~cellfun(@isempty,cellfun(@(X) strfind(X,[Mice{Mouseidx} '_' Days{Dayidx}]),{TrainingList.name},'UniformOutput',false)));
@@ -50,87 +49,77 @@ for Mouseidx = 1:length(Mice);
         
         if ~isempty(Fileidx)
             
-            if length(Fileidx)>1;   % If there are more than 1 blocks concatinate blocks 
+            %% Concatinate blocks
+            
+            if length(Fileidx)>1   % If there are more than 1 blocks concatinate blocks 
                 
                 for j = Fileidx
                          percwrong = CheckReactions(TrainingList(j).name);
                          load(TrainingList(j).name)
-                         LOG.Reaction = LOG.correctReaction;%Use improved reactions
+%                        ResponseCell = LOG.correctReaction;%Use improved reactions
                          RTleft = [RTleft LOG.RTleftVec];
                          RTright = [RTright LOG.RTrightVec]; 
-                         ResponseCell = [ResponseCell LOG.Reaction];
+                         ResponseCell = [ResponseCell LOG.correctReaction];
                          Side = [Side LOG.Side];
                          Phase = [Phase LOG.CurrentPhase];
                          currentdelay = [currentdelay LOG.currentdelay];
                          
-                         if length(unique(LOG.currentdelay)) >1;
-                     
-                     diffidx = find(diff(LOG.currentdelay))+1;
-                     nrmlidx = find(diff(LOG.currentdelay)==0)+1;
-                     longeridx = find(diff(LOG.currentdelay)==1500)+1;
-                     smallerdly = find(diff(LOG.currentdelay)==-1500)+1;
-                     
-                     delayperf = sum(find(strcmp(LOG.Reaction(diffidx),'Hit')))./(sum(find(strcmp(LOG.Reaction(diffidx),'Error')))+sum(find(strcmp(LOG.Reaction(diffidx),'Hit'))));
-                     recurrperf = sum(find(strcmp(LOG.Reaction(nrmlidx),'Hit')))./(sum(find(strcmp(LOG.Reaction(nrmlidx),'Error')))+sum(find(strcmp(LOG.Reaction(nrmlidx),'Hit'))));
-                     longerdlyperf = sum(find(strcmp(LOG.Reaction(longeridx),'Hit')))./(sum(find(strcmp(LOG.Reaction(longeridx),'Error')))+sum(find(strcmp(LOG.Reaction(longeridx),'Hit'))));
-                     smallerdlyperf = sum(find(strcmp(LOG.Reaction(smallerdly),'Hit')))./(sum(find(strcmp(LOG.Reaction(smallerdly),'Error')))+sum(find(strcmp(LOG.Reaction(smallerdly),'Hit'))));
-                     zerocuedelayperf = sum(strcmp(LOG.Reaction,'Hit')& LOG.currentdelay ==0)./(sum(strcmp(LOG.Reaction,'Error')&LOG.currentdelay ==0)+sum(strcmp(LOG.Reaction,'Hit')& LOG.currentdelay ==0));
-   
-                         if isnan(delayperf)~=1;
-                             ChangePerf(Mouseidx,Dayidx)=delayperf;
-                             NormalPerf(Mouseidx,Dayidx) = recurrperf;
-                             LongerPerf(Mouseidx,Dayidx) = longerdlyperf;
-                             SmallerPerf(Mouseidx,Dayidx) = smallerdlyperf;
-                             ZeroCuePerf(Mouseidx,Dayidx) = zerocuedelayperf;
-                         end
-                 end
-                         
-                                 
-                                 
-                                 
-                end
-            else
+                end % end of concatination for loop
+            else %if not neeeded to concatinate just load the files
+                
                 percwrong = CheckReactions(TrainingList(Fileidx).name);
                 load(TrainingList(Fileidx).name)
-                LOG.Reaction = LOG.correctReaction;%Use improved reactions
+                ResponseCell = LOG.correctReaction;%Use improved reactions
                 RTleft = LOG.RTleftVec;
                 RTright = LOG.RTrightVec;
-                ResponseCell = LOG.Reaction;
                 Side = LOG.Side;
                 Phase = LOG.CurrentPhase;
+                currentdelay = LOG.currentdelay;
+         
+            end % End the loading and initiliazing of variables
+            
+            if length(currentdelay)~=length(ResponseCell) %In case of passives at end ofsession currentdly and LOG.Reaction 
+                %Don't have same length vectors, concatinate to equalize.
                 
-                 if length(unique(LOG.currentdelay)) >1
-                     
-                     diffidx = find(diff(LOG.currentdelay))+1;
-                     nrmlidx = find(diff(LOG.currentdelay)==0)+1;
-                     longeridx = find(diff(LOG.currentdelay)==1500)+1;
-                     smallerdly = find(diff(LOG.currentdelay)==-1500)+1;
-                     
-                     delayperf = sum(find(strcmp(LOG.Reaction(diffidx),'Hit')))./(sum(find(strcmp(LOG.Reaction(diffidx),'Error')))+sum(find(strcmp(LOG.Reaction(diffidx),'Hit'))));
-                     recurrperf = sum(find(strcmp(LOG.Reaction(nrmlidx),'Hit')))./(sum(find(strcmp(LOG.Reaction(nrmlidx),'Error')))+sum(find(strcmp(LOG.Reaction(nrmlidx),'Hit'))));
-                     longerdlyperf = sum(find(strcmp(LOG.Reaction(longeridx),'Hit')))./(sum(find(strcmp(LOG.Reaction(longeridx),'Error')))+sum(find(strcmp(LOG.Reaction(longeridx),'Hit'))));
-                     smallerdlyperf = sum(find(strcmp(LOG.Reaction(smallerdly),'Hit')))./(sum(find(strcmp(LOG.Reaction(smallerdly),'Error')))+sum(find(strcmp(LOG.Reaction(smallerdly),'Hit'))));
-                     zerocuedelayperf = sum(strcmp(LOG.Reaction,'Hit')& LOG.currentdelay ==0)./(sum(strcmp(LOG.Reaction,'Error')&LOG.currentdelay ==0)+sum(strcmp(LOG.Reaction,'Hit')& LOG.currentdelay ==0));
-                         
-                     if isnan(delayperf)~=1;
-                             ChangePerf(Mouseidx,Dayidx)=delayperf;
-                             NormalPerf(Mouseidx,Dayidx) = recurrperf;
-                             LongerPerf(Mouseidx,Dayidx) = longerdlyperf;
-                             SmallerPerf(Mouseidx,Dayidx) = smallerdlyperf;
-                             ZeroCuePerf(Mouseidx,Dayidx) = zerocuedelayperf;
-                     end
-                 end
-                
-                
-                
-                
-                
+                ResponseCell = ResponseCell(1:length(currentdelay));
             end
+
+                 if length(unique(currentdelay)) >1 % if there is more than one delay setting used try to find differences in data
+                     
+                     diffidx = find(diff(currentdelay))+1; % Al the trials of which the previous cue delay was different than currentdelay
+                     nrmlidx = find(diff(currentdelay)==0)+1;   %The trials of which the previous trial had similar cue delay
+                     longeridx = find(diff(currentdelay)==1500)+1; % when the delay period is longer than expected
+                     smallerdly = find(diff(currentdelay)==-1500)+1; % For when the delay is suddenly smaller than expected
+                     
+       %Calculate performance of trials defined above
+                     
+delayperf = sum(find(strcmp(ResponseCell(diffidx),'Hit')))./(sum(find(strcmp(ResponseCell(diffidx),'Error')))+sum(find(strcmp(ResponseCell(diffidx),'Hit'))));
+recurrperf = sum(find(strcmp(ResponseCell(nrmlidx),'Hit')))./(sum(find(strcmp(ResponseCell(nrmlidx),'Error')))+sum(find(strcmp(ResponseCell(nrmlidx),'Hit'))));
+longerdlyperf = sum(find(strcmp(ResponseCell(longeridx),'Hit')))./(sum(find(strcmp(ResponseCell(longeridx),'Error')))+sum(find(strcmp(ResponseCell(longeridx),'Hit'))));
+smallerdlyperf = sum(find(strcmp(ResponseCell(smallerdly),'Hit')))./(sum(find(strcmp(ResponseCell(smallerdly),'Error')))+sum(find(strcmp(ResponseCell(smallerdly),'Hit'))));
+zerocuedelayperf = sum(strcmp(ResponseCell,'Hit')& currentdelay ==0)./(sum(strcmp(ResponseCell,'Error')&currentdelay ==0)+sum(strcmp(ResponseCell,'Hit')& currentdelay ==0));
+maxcuedelayperf = sum(strcmp(ResponseCell,'Hit')&currentdelay ==1500)./(sum(strcmp(ResponseCell,'Error')&currentdelay ==1500)+sum(strcmp(ResponseCell,'Hit')& currentdelay ==1500));
+
+
+ChangePerf(Mouseidx,Dayidx)=   delayperf;
+NormalPerf(Mouseidx,Dayidx)=   recurrperf;
+LongerPerf(Mouseidx,Dayidx)=   longerdlyperf;
+SmallerPerf(Mouseidx,Dayidx)=  smallerdlyperf;
+ZeroCuePerf(Mouseidx,Dayidx)=  zerocuedelayperf;
+
+                     
+                 end
         end
+                        
     end
 end
 
+        
+
+
 clrspec = {'b','r','g','p'};
+namespec = {'DiffDelay','SameDelay','LongerDelay','ShorterDelay','ZeroCueDelay','MaxCueDelay'};
+
        
      
            
@@ -144,10 +133,26 @@ clrspec = {'b','r','g','p'};
     Chief = [nanmean(ChangePerf(2,:)) nanmean(NormalPerf(2,:)) nanmean(LongerPerf(2,:)) nanmean(SmallerPerf(2,:)) nanmean(ZeroCuePerf(2,:))];
     Esmeralda = [nanmean(ChangePerf(3,:)) nanmean(NormalPerf(3,:)) nanmean(LongerPerf(3,:)) nanmean(SmallerPerf(3,:)) nanmean(ZeroCuePerf(3,:))];
     Frey = [nanmean(ChangePerf(4,:)) nanmean(NormalPerf(4,:)) nanmean(LongerPerf(4,:)) nanmean(SmallerPerf(4,:)) nanmean(ZeroCuePerf(4,:))];
+    
+                    h = bar([nanmean(ChangePerf) nanmean(NormalPerf) nanmean(LongerPerf) nanmean(SmallerPerf) nanmean(ZeroCuePerf) nanmean(maxcuedelayperf)]);
+                    xlabel('Condition')
+                    ylabel('Performance')
+                    ylim([0 1]);
+                    xticklabels(namespec);
+                    
+%                    
+%                     
+                    
+%% Plotting bar graph
 
-Scores = [Alladin' Chief' Esmeralda' Frey'];
+micenames={'Alladin', 'Esmeralda', 'Frey'};              
+Scores = [Alladin' Esmeralda' Frey'];
+b = bar(Scores);
+legend(b,micenames)
+xticklabels(namespec)
+ylim([0 1]);
 
-bar(1:length(Mice),Scores)
-    
-    
-    
+
+
+
+
