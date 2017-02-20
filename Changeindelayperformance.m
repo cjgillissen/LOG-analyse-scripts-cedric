@@ -99,7 +99,7 @@ for Mouseidx = 1:length(Mice);
                 Side = LOG.Side;
                 Phase = LOG.CurrentPhase;
                 
-                 if length(unique(LOG.currentdelay)) >1;
+                 if length(unique(LOG.currentdelay)) >1
                      
                      diffidx = find(diff(LOG.currentdelay))+1;
                      nrmlidx = find(diff(LOG.currentdelay)==0)+1;
@@ -111,13 +111,14 @@ for Mouseidx = 1:length(Mice);
                      longerdlyperf = sum(find(strcmp(LOG.Reaction(longeridx),'Hit')))./(sum(find(strcmp(LOG.Reaction(longeridx),'Error')))+sum(find(strcmp(LOG.Reaction(longeridx),'Hit'))));
                      smallerdlyperf = sum(find(strcmp(LOG.Reaction(smallerdly),'Hit')))./(sum(find(strcmp(LOG.Reaction(smallerdly),'Error')))+sum(find(strcmp(LOG.Reaction(smallerdly),'Hit'))));
                      zerocuedelayperf = sum(strcmp(LOG.Reaction,'Hit')& LOG.currentdelay ==0)./(sum(strcmp(LOG.Reaction,'Error')&LOG.currentdelay ==0)+sum(strcmp(LOG.Reaction,'Hit')& LOG.currentdelay ==0));
-                         if isnan(delayperf)~=1;
+                         
+                     if isnan(delayperf)~=1;
                              ChangePerf(Mouseidx,Dayidx)=delayperf;
                              NormalPerf(Mouseidx,Dayidx) = recurrperf;
                              LongerPerf(Mouseidx,Dayidx) = longerdlyperf;
                              SmallerPerf(Mouseidx,Dayidx) = smallerdlyperf;
                              ZeroCuePerf(Mouseidx,Dayidx) = zerocuedelayperf;
-                         end
+                     end
                  end
                 
                 

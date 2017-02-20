@@ -158,9 +158,9 @@ end
 x = plot(rtmat);
 xlabel('Earliest RT of a misregistered trial')
 ylabel('Frequency')
-lol = [1 15 30 45 60];
-xticks(lol)
-xticklabels({'0','701','1451','2201','2951'})
+lol = [1 15 30 45 
+xticks(edges)
+xticklabels(num2str(edges))
 
 
 
