@@ -1,6 +1,6 @@
 clear all
 close all
-cd('C:\Users\peter\Desktop\Scripts\TrainingLogs')
+cd('C:\Users\gillissen\Desktop\InternshipCédric\TrainingLogs')
 
 %% Select Mouse
 TrainingList = dir(fullfile(cd,'*.mat'));
@@ -145,8 +145,8 @@ namespec = {'DiffDelay','SameDelay','LongerDelay','ShorterDelay','ZeroCueDelay',
                     
 %% Plotting bar graph
 
-micenames={'Alladin', 'Esmeralda', 'Frey'};              
-Scores = [Alladin' Esmeralda' Frey'];
+micenames={'Alladin', 'Esmeralda', 'Frey','Chief'};              
+Scores = [Alladin' Esmeralda' Frey' Chief'];
 b = bar(Scores);
 legend(b,micenames)
 xticklabels(namespec)
