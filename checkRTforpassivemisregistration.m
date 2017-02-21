@@ -38,7 +38,7 @@ nrPassWrong = nan(size(length(Mice),length(Days))); % nr of passives that are wr
 percPassives = nan(size(length(Mice),length(Days))); % percentage of passives given in whole session, so nr passives / nr trials
 percWrong = nan(size(length(Mice),length(Days))); % percentage wrongly registered troughout whole session for all conditions
 percWrongisPass = nan(size(length(Mice),length(Days))); % of percWrong, what is the percentage passives...
-
+nrincorrect = nan(size(length(Mice),length(Days))); % nr of wrongly registered trials per session per animal
 
 
 for Mouseidx = 1:length(Mice) % Mouse loop
@@ -46,7 +46,7 @@ for Mouseidx = 1:length(Mice) % Mouse loop
     for Dayidx = 1: length(Days) % Session loop
         Fileidx = find(~cellfun(@isempty,cellfun(@(X) strfind(X,[Mice{Mouseidx} '_' Days{Dayidx}]),{TrainingList.name},'UniformOutput',false)));
         
-           if size(Fileidx)==1 % I don't want to bother with concatenating sessions sorry
+           if size(Fileidx)==1 % I don't want to bother concatenating sessions sorry
             load(TrainingList(Fileidx).name); % find in traininglist the string element that has the name of the file you want to load
             idxincorrect = []; % initiliaze the index numbers of trials that have an incongruent correctReaction - Reaction
      
@@ -54,12 +54,19 @@ for Mouseidx = 1:length(Mice) % Mouse loop
     
     X = strcmp(LOG.correctReaction,LOG.Reaction);
     idxincorrect = find(~X);
+    nrincorrect(Mouseidx,Dayidx) = length(idxincorrect);
     percWrong(Mouseidx,Dayidx) = CheckReactions(TrainingList(Fileidx).name);
     idxpassive = find(LOG.Gavepassive);
     percWrongisPass(Mouseidx,Dayidx) = length(idxincorrect)/(length(find(LOG.Gavepassive(idxincorrect)))+length(idxincorrect));
     nrPassives(Mouseidx,Dayidx) = length(find(LOG.Gavepassive));
     nrPassWrong(Mouseidx,Dayidx) = length(find(LOG.Gavepassive(idxincorrect))); 
     percPassives(Mouseidx,Dayidx) = nrPassives(Mouseidx,Dayidx)/length(LOG.Reaction);
+
+    if length(idxincorrect)>=1 % otherwise you don't know whether 0 because of zero or nan
+                percWrongisPass(Mouseidx,Dayidx) = length(idxincorrect)/(length(find(LOG.Gavepassive(idxincorrect)))+length(idxincorrect));
+            else
+                percWrongisPass(Mouseidx,Dayidx) = nan;
+    end
 
     RTLEFT = nan(size(idxincorrect));
     RTRIGHT = nan(size(idxincorrect));
@@ -83,13 +90,17 @@ for Mouseidx = 1:length(Mice) % Mouse loop
 
             X = strcmp(LOG.correctReaction,LOG.Reaction);
             idxincorrect = find(~X);
+            nrincorrect(Mouseidx,Dayidx) = length(idxincorrect);
             idxpassive = find(LOG.Gavepassive);
             nrPassives(Mouseidx,Dayidx) = length(find(LOG.Gavepassive));
             nrPassWrong(Mouseidx,Dayidx) = length(find(LOG.Gavepassive(idxincorrect))); 
             percPassives(Mouseidx,Dayidx) = nrPassives(Mouseidx,Dayidx)/length(LOG.Reaction);
-            percWrongisPass(Mouseidx,Dayidx) = length(idxincorrect)/(length(find(LOG.Gavepassive(idxincorrect)))+length(idxincorrect));
-
             
+            if length(idxincorrect)>=1
+                percWrongisPass(Mouseidx,Dayidx) = length(idxincorrect)/(length(find(LOG.Gavepassive(idxincorrect)))+length(idxincorrect));
+            else
+                percWrongisPass(Mouseidx,Dayidx) = nan;
+            end
 
             RTLEFT = nan(size(idxincorrect));
             RTRIGHT = nan(size(idxincorrect));
@@ -113,32 +124,11 @@ for Mouseidx = 1:length(Mice) % Mouse loop
     end
 end
 
-%         X = nan(size(MINRTLEFT));
-%         X(MINRTLEFT<MINRTRIGHT) = MINRTLEFT(MINRTLEFT<MINRTRIGHT);
-%         X(MINRTRIGHT<MINRTLEFT) = MINRTRIGHT(MINRTRIGHT<MINRTLEFT);
-%         percPassWrong = nrPassWrong./(nrPassWrong+nrPassives);
-%         
-%         for i = 1:length(Mice);
-%             hold all
-%             x = figure;
-%             plot(percPassWrong
-%             xlabel('Session')
-%             ylabel('Proportion')
-% 
-%             hold on
-%             plot(percPassives);
-%             
-%         end
-%         \
-
-
 %% Create reactiontime bins
 
 edges = 1:50:3000;
 rtfrequency = cellfun(@(x) histc(x, edges), MINRTLEFT, 'UniformOutput',false); % now just count the numbers at the specific bin
-% rthist = cellfun(@(x) find(x),rtfrequency,'UniformOutput',false); % not useful because the numbers are already binned
-emptyidx = find(cellfun(@isempty,rtfrequency));
-% rtfrequency{emptyidx} = mat2cell(zeros(1,61),1);
+emptyidx = find(cellfun(@isempty,rtfrequency)); % not used
 rtmat = zeros(1,60);
 
 for i = 1:size(rtfrequency,1)
@@ -156,15 +146,15 @@ end
 
 
 x = plot(rtmat);
-xlabel('Earliest RT of a misregistered trial')
+xlabel('Earliest RT of a misregistered trial (ms)')
 ylabel('Frequency')
-lol = [1 15 30 45 60];
+lol = [1 10 20 30 40 50 60];
 xticks(lol)
-xticklabels({'0','701','1451','2201','2951'})
+xticklabels({'1','451','951','1451','1951','2451','2951'})
 
 
 
-%         
+figure    
 for i = 1:length(Mice)
     hold all
     plot(percPassives(i,:))
@@ -172,6 +162,7 @@ for i = 1:length(Mice)
     ylabel('Proportion passives')
 end
 
+figure
 for i = 1:length(Mice)
     hold all
     plot(percWrongisPass(i,:))
@@ -179,13 +170,7 @@ for i = 1:length(Mice)
     ylabel('Proportion wrong registered is passive')
 end
 
-for i = 1:length(Mice)
-    hold all
-    plot(percPassWrong(i,:))
-    xlabel('Session')
-    ylabel('Proportion passives wrongly registered')
-end
-
+figure
 for i = 1:length(Mice)
     hold all
     plot(nrPassWrong(i,:))
@@ -193,6 +178,19 @@ for i = 1:length(Mice)
     ylabel('# passives wrongly registered')
 end
 
-
+figure
+for i = 1:length(Mice)
+    hold all
+    plot(percWrong(i,:))
+    xlabel('Session')
+    ylabel('Proportion wrongly registered')
+end
         
         
+figure
+for i = 1:length(Mice)
+    hold all
+    plot(percWrong(i,:))
+    xlabel('Session')
+    ylabel('# wrongly registered')
+end
