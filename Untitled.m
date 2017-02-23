@@ -43,7 +43,7 @@ addpath(genpath('C:\Users\gillissen\Desktop\InternshipCédric\Scripts\Mouse'));
                 
                 while ~isfield(LOG,'correctReaction') %Check whether reactions were registered okay
                     CheckReactions('\\vcnin\mouse_working_memory\Cédric\MainStorage\Chief\Chief20170103\Chief_20170103_B1')
-                    tmp = load([folder expname '\' mouse expnum '.mat']);
+                    tmp = load('\\vcnin\mouse_working_memory\Cédric\MainStorage\Chief\Chief20170103\Chief_20170103_B1');
                     if isfield(tmp,'tosave')
                         tmp = tmp.tosave;
                     end
