@@ -100,69 +100,68 @@ addpath(genpath('C:\Users\gillissen\Desktop\InternshipCédric\Scripts\Mouse'));
 cd('\\vcnin\mouse_working_memory\Cédric\MainStorage\Chief\Chief20170103\Chief1')
 load(fullfile(storepath,mouse,'brainareamodel.mat'))
 load(fullfile(storepath,mouse,[mouse date],[mouse num2str(expnr)],'BASELINEMAT.mat'))
-load('ThrowAwayIdx')
+
+
 
 for j = 1:length(ConditionNames)
 
-    load(fullfile(['Chief1_RawData_C' num2str(j)]))
-    trialidx = single(ctrials{j});
+load(fullfile(['Chief1_RawData_C' num2str(j)]))
+
+
+
+
+%% Apply brainmask
+
+V1 = single(conddata);
+clear conddata
+V1(V1==0)=nan; 
+brainmask = zeros(800,800);
+brainmask(Model.Regions{11}) = 1;
+
+for i = 1:size(V1,4) %loop over trials 
     
-
-
-
-    %% Apply brainmask
-
-    V1 = single(conddata);
-    clear conddata
-    V1(V1==0)=nan; 
-    brainmask = zeros(800,800);
-    brainmask(Model.Regions{11}) = 1;
-
-    for i = 1:size(V1,4) %loop over trials 
-
-        tmp = V1(:,:,:,i);
-        tmp(~repmat(brainmask,[1,1,size(tmp,3)]))=nan;
-        V1(:,:,:,i) = imgaussfilt(tmp,smoothfact); %Gaussian filter
-
-    end
-
-    clear tmp
-
-    %% Slow trent correction
-
-    
-
-    for i = 1:100:size(V1,1)
-         QQ = single(V1(i:i+99,:,:,:));
-         QQ = QQ ./ permute(repmat(BASELINEMAT(i:i+99,:,trialidx),[1,1,1,size(QQ,3)]),[1,2,4,3]);
-         V1(i:i+99,:,:,:) = QQ;
-    end
-
-
-
-                    %% Decodign attempts of just a couple of pixels
-                    % located in V1 of left hemisphere.
-                    % Select some random pixels of interest. 
-
-
-                    x = find(brainmask);
-                    x = x(randperm(length(x),10));
-                    [x,y] = ind2sub([800 800],x(1:10));
-                    POI = [x y];
-
-                    tmp = nan(10,10,size(QQ,3),size(QQ,4));
-
-                    for i = 1:length(POI) % only use POI datapoints
-                        tmp(i,i,:,:) = QQ(POI(i,1),POI(i,2),:,:);             
-                    end
-
-                    % remove motion trials
-                    %condition is 4...? 
-
-                    removetrialsidx = find(removeidx(:,4));
-    
-
+    tmp = V1(:,:,:,i);
+    tmp(~repmat(brainmask,[1,1,size(tmp,3)]))=nan;
+    V1(:,:,:,i) = imgaussfilt(tmp,smoothfact); %Gaussian filter
+                
 end
+
+clear tmp
+
+%% Slow trent correction
+
+trialidx = single(ctrials{4});
+
+for i = 1:100:size(V1,1)
+     QQ = single(V1(i:i+99,:,:,:));
+     QQ = QQ ./ permute(repmat(BASELINEMAT(i:i+99,:,trialidx),[1,1,1,size(QQ,3)]),[1,2,4,3]);
+     V1(i:i+99,:,:,:) = QQ;
+end
+
+
+
+ %% Decodign attempts of just a couple of pixels
+                % located in V1 of left hemisphere.
+                % Select some random pixels of interest. 
+                
+                
+                x = find(brainmask);
+                x = x(randperm(length(x),10));
+                [x,y] = ind2sub([800 800],x(1:10));
+                POI = [x y];
+                
+                tmp = nan(10,10,size(QQ,3),size(QQ,4));
+                
+                for i = 1:length(POI) % only use POI datapoints
+                    tmp(i,i,:,:) = QQ(POI(i,1),POI(i,2),:,:);             
+                end
+                
+                % remove motion trials
+                %condition is 4...? 
+                
+                removetrialsidx = find(removeidx(:,4));
+    
+
 
 
                         
