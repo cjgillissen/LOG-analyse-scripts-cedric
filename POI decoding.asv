@@ -150,12 +150,15 @@ V1 = V1(:,:,:,find(removeidx(j,:))); %Delete movement trials.
  %% Decodign attempts of just a couple of pixels
     % located in V1 of left hemisphere.
     % Select some random pixels of interest. 
-    tmp = nan(length(POI),length(POI),size(V1,3),size(V1,4));
+    tmp = nan(10,10,size(V1,3),size(V1,4));
         for i = 1:length(POI) % only use POI datapoints
             tmp(i,i,:,:) = QQ(POI(i,1),POI(i,2),:,:);             
         end
-        
-    
                 
+                
+                
+                                   
+
 end
 
+                        
