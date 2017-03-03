@@ -10,7 +10,7 @@ clear conddata
 for i = 1:size(tmp,4) %loop over trials 
     
     V1 = tmp(:,:,:,i);
-    V1 = imgaussfilt(V1,2); %Gaussian filter
+    V1 = imgaussfilt(V1,2.5); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
 
@@ -52,8 +52,14 @@ trace = trace(:,:,4:end);
 trace = trace(220:680,220:680,:);
 trace = trace(1:2:end,1:2:end,:);
 
+% normalize between 0 and 1
 
-save('FreyC2','trace')
+mintmp = nanmin(trace);
+maxtmp = nanmax(trace);
+difftmp = maxtmp-mintmp;
+tmp = (trace-repmat(mintmp,size(trace,1),1))./repmat(difftmp,size(trace,1),1);
+
+save('FreyC2','tmp')
 save('MaskfreyC2','mask')
 
 
@@ -61,3 +67,70 @@ for i = 1:size(trace,3)
     
     imagesc(trace(:,:,i));
 end
+
+%% plot quiver
+% with interactive cool ui slider that can slide trough the time...
+
+% [x,y] = meshgrid(1:size(uvCLG,1),1:size(uvCLG,2)); 
+
+i = 1;
+f = figure(1);
+p = quiver(imag(uvCLG(:,:,i)),real(uvCLG(:,:,i)));
+
+ %// initialize the slider
+    h = uicontrol(...
+        'parent'  , f,...        
+        'units'   , 'normalized',...    %// so yo don't have to f*ck with pixels
+        'style'   , 'slider',...        
+        'position', [0.05 0.05 0.9 0.05],...
+        'min'     , 1,...               %// Make the A between 1...
+        'max'     , size(uvCLG,3),...              %// and 10, with initial value
+        'value'   , i,...               %// as set above.
+        'callback', @sliderCallback);   %// This is called when using the arrows
+                                  
+   hLstn = handle.listener(h,'ActionEvent',@sliderCallback);                                
+                               
+   function sliderCallback(~,~)
+        delete(p);
+        p = quiver(imag(uvCLG(:,:,get(h,'value'))),real(uvCLG(:,:,(get(h,'value')))))
+        axis tight
+        axis([0 2*pi -10 10])
+   end 
+
+
+                
+%% try whole brain now
+% with mask!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
