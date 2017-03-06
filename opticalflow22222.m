@@ -4,8 +4,26 @@ load('C:\Users\gillissen\Desktop\FREYC2\Frey1_RawData_C2.mat')
 load('C:\Users\gillissen\Desktop\FREYC2\BASELINEMAT.mat')
 
 
-tmp = single(conddata(:,:,:,1:10));
+tracethiscond = single(conddata(:,:,:,1:10));
 clear conddata
+
+p=2; q=2;
+tmp = zeros(size(tracethiscond,1)/p,size(tracethiscond,2)/q,size(tracethiscond,3),size(tracethiscond,4));
+for i  = 1:size(tmp,4)
+    for j = 1:size(tmp,3)
+        
+        M = tracethiscond(:,:,j,i);
+        [m,n]=size(M); %M is the original matrix
+        M=sum( reshape(M,p,[]) ,1 );
+        M=reshape(M,m/p,[]).'; %Note transpose
+        M=sum( reshape(M,q,[]) ,1);
+        M=reshape(M,n/q,[]).'; %Note transpose
+        tmp(:,:,j,i) = M;
+        
+    end
+end
+
+
 
 for i = 1:size(tmp,4) %loop over trials 
     
@@ -39,8 +57,10 @@ for i = 1:100:size(tmp,1)
     trace(i:i+99,:,:,:) = QQ;
 end
 
+clear QQ
 
-
+I = imagesc(trace(:,:,5,5));
+BW = roipoly(I);
 
 
 
@@ -53,11 +73,11 @@ trace = trace(220:680,220:680,:);
 trace = trace(1:2:end,1:2:end,:);
 
 % normalize between 0 and 1
-
-mintmp = nanmin(trace);
-maxtmp = nanmax(trace);
-difftmp = maxtmp-mintmp;
-tmp = (trace-repmat(mintmp,size(trace,1),1))./repmat(difftmp,size(trace,1),1);
+% don't  normalize use binning and then  *100% df/f 
+% mintmp = nanmin(trace);
+% maxtmp = nanmax(trace);
+% difftmp = maxtmp-mintmp;
+% tmp = (trace-repmat(mintmp,size(trace,1),1))./repmat(difftmp,size(trace,1),1);
 
 save('FreyC2','tmp')
 save('MaskfreyC2','mask')
