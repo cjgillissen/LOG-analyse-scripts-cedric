@@ -1,34 +1,69 @@
-RTleft=[];RTright=[]; %Pre allocate Licks
-        ResponseCell = {}; %Preallocate for ResponseCell concatenation
-        Side = {};
-        Phase = {};
+
+cd('C:\Users\gillissen\Desktop\TrainingLogs')
+
+
 currentdelay = [];
+gavepassive = [];
 rewcount = [];
-actrewper = [];
+valvedur = [];
+setup = [];
+Side = {};
+mice = {};
 
+load('Frey_20170306_B1.mat')
 
-load('Frey_20170301_B1')
-
- RTleft = [RTleft LOG.RTleftVec];
- RTright = [RTright LOG.RTrightVec]; 
- ResponseCell = [ResponseCell LOG.Reaction];
- Side = [Side LOG.Side];
- Phase = [Phase LOG.CurrentPhase];
+ Side = {Side LOG.Side};
  currentdelay = [currentdelay LOG.currentdelay];
- rewcount = LOG.RewardCount;
-actrewper = LOG.ActualRewPeriod;
+ valvedur = [valvedur LOG.ValveOpenTime];
+ setup = [setup repmat(LOG.Setup,[1 size(LOG.ActualRewPeriod,2)])];
+ mice = {mice repmat(LOG.Mouse,[1 size(LOG.ActualRewPeriod,2)])};
  
- load('Frey_20170301_B2')
+ load('Frey_20170303_B1.mat')
  
- RTleft = [RTleft LOG.RTleftVec];
- RTright = [RTright LOG.RTrightVec]; 
- ResponseCell = [ResponseCell LOG.Reaction];
- Side = [Side LOG.Side];
- Phase = [Phase LOG.CurrentPhase];
+ 
+Side = {Side LOG.Side};
  currentdelay = [currentdelay LOG.currentdelay];
- rewcount = [rewcount LOG.RewardCount];
-actrewper = [actrewper LOG.ActualRewPeriod];
-
-hits = sum(strcmp(ResponseCell,'Hit'));
-errors = sum(strcmp(ResponseCell,'Error'));
-nrtrials = length(ResponseCell);
+ valvedur = [valvedur LOG.ValveOpenTime];
+ setup = [setup repmat(LOG.Setup,[1 size(LOG.ValveOpenTime,2)])];
+ mice = {mice repmat(LOG.Mouse,[1 size(LOG.ActualRewPeriod,2)])};
+ 
+ load('Chief_20170306_B1.mat')
+ 
+ Side = {Side LOG.Side};
+ currentdelay = [currentdelay LOG.currentdelay];
+ valvedur = [valvedur LOG.ValveOpenTime];
+ setup = [setup repmat(LOG.Setup,[1 size(LOG.ActualRewPeriod,2)])];
+ mice = {mice repmat(LOG.Mouse,[1 size(LOG.ActualRewPeriod,2)])};
+ 
+ 
+ load('Chief_20170303_B1.mat')
+ 
+ Side = {Side LOG.Side};
+ currentdelay = [currentdelay LOG.currentdelay];
+ valvedur = [valvedur LOG.ValveOpenTime];
+ setup = [setup repmat(LOG.Setup,[1 size(LOG.ActualRewPeriod,2)])];
+ mice = {mice repmat(LOG.Mouse,[1 size(LOG.ActualRewPeriod,2)])};
+ 
+ load('Alladin_20170306_B1.mat')
+ 
+ Side = {Side LOG.Side};
+ currentdelay = [currentdelay LOG.currentdelay];
+ valvedur = [valvedur LOG.ValveOpenTime];
+ setup = [setup repmat(LOG.Setup,[1 size(LOG.ActualRewPeriod,2)])];
+ mice = {mice repmat(LOG.Mouse,[1 size(LOG.ActualRewPeriod,2)])};
+ 
+ load('Alladin_20170303_B1.mat')
+ 
+ Side = {Side LOG.Side};
+ currentdelay = [currentdelay LOG.currentdelay];
+ valvedur = [valvedur LOG.ValveOpenTime];
+ setup = [setup repmat(LOG.Setup,[1 size(LOG.ActualRewPeriod,2)])];
+ mice = {mice repmat(LOG.Mouse,[1 size(LOG.ActualRewPeriod,2)])};
+ 
+ 
+ values1 = unique(valvedur(setup==1));
+ values1(isnan(values1)) = [];
+ 
+ valvehistsetup1 = histc(valvedur(setup==1),values1(~isnan(values)));
+ 
+ 
