@@ -14,7 +14,7 @@ for i  = 1:size(tmp,4)
         
         M = tracethiscond(:,:,j,i);
         [m,n]=size(M); %M is the original matrix
-        M=sum( reshape(M,p,[]) ,1 );
+        M=sum( reshape(M,p,[]) ,1 ); % when using [] (max one in reshape)  reshape calculates the size of that dimension to ensure numel(a) ==numel(b)
         M=reshape(M,m/p,[]).'; %Note transpose
         M=sum( reshape(M,q,[]) ,1);
         M=reshape(M,n/q,[]).'; %Note transpose
@@ -23,11 +23,15 @@ for i  = 1:size(tmp,4)
     end
 end
 
-
+I = imagesc(tmp(:,:,5,5)); % select brainmask before multiplying df/f by 100 otherwise colormap is out of range to see the brain...
+BW = roipoly;
+brainmask = BW;
+mask = brainmask;
 
 for i = 1:size(tmp,4) %loop over trials 
     
     V1 = tmp(:,:,:,i);
+    V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
     V1 = imgaussfilt(V1,2.5); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
@@ -47,30 +51,17 @@ trialidx = single(ctrials{2});
 % clear QQ
 
 
-
 for i = 1:100:size(tmp,1)
     QQ = single(tmp(i:i+99,:,:,:));
     base = single(squeeze(nanmean(QQ(:,:,timeline>=-300 & timeline<0,:),3))); %Baseline
     base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
     QQ = single(QQ(:,:,timeline>=0 &timeline<=2000,:)); %F
     QQ = (QQ - permute(repmat(base,[1,1,1,size(QQ,3)]),[1,2,4,3]))./permute(repmat(base,[1,1,1,size(QQ,3)]),[1,2,4,3]); %dF/F
-    trace(i:i+99,:,:,:) = QQ;
+    dFFav(i:i+99,:,:) = squeeze(nanmean(QQ,4));
 end
 
 clear QQ
 
-I = imagesc(trace(:,:,5,5));
-BW = roipoly(I);
-
-
-
-mask = ones(800,800);
-mask(isnan(trace(:,:,5,1)))=0;
-
-trace = squeeze(nanmean(trace,4));
-trace = trace(:,:,4:end);
-trace = trace(220:680,220:680,:);
-trace = trace(1:2:end,1:2:end,:);
 
 % normalize between 0 and 1
 % don't  normalize use binning and then  *100% df/f 
@@ -79,14 +70,21 @@ trace = trace(1:2:end,1:2:end,:);
 % difftmp = maxtmp-mintmp;
 % tmp = (trace-repmat(mintmp,size(trace,1),1))./repmat(difftmp,size(trace,1),1);
 
-save('FreyC2','tmp')
-save('MaskfreyC2','mask')
 
 
-for i = 1:size(trace,3)
-    
-    imagesc(trace(:,:,i));
+dFFav = dFFav(:,:,4:end); %frame 3 is bad
+dFFav = dFFav*100;
+tmp = zeros(size(dFFav,1)/2,size(dFFav,2)/2,size(dFFav,3));
+
+for i = 1:size(dFFav,3)
+    tmp(:,:,i) = imresize(dFFav(:,:,i),0.5);
 end
+
+
+save('FreyC2','tmp')
+save('MaskfreyC2','brainmask')
+save('MaskfreyC22','mask') % OFAMM requires the mask to be names mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
+
 
 %% plot quiver
 % with interactive cool ui slider that can slide trough the time...
