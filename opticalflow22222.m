@@ -2,9 +2,11 @@
 load('C:\Users\gillissen\Desktop\FREYC2\ThrowAwayIdx.mat')
 load('C:\Users\gillissen\Desktop\FREYC2\Frey1_RawData_C2.mat')
 load('C:\Users\gillissen\Desktop\FREYC2\BASELINEMAT.mat')
+load('C:\Users\gillissen\Desktop\TrainingLogs\Frey_20161208_B1.mat')
 
+x = LOG.currentdelay(ctrials{2});
 
-tracethiscond = single(conddata(:,:,:,1:10));
+tracethiscond = single(conddata(:,:,:,x==0));
 clear conddata
 
 p=2; q=2;
@@ -23,6 +25,12 @@ for i  = 1:size(tmp,4)
     end
 end
 
+
+
+
+
+
+
 I = imagesc(tmp(:,:,5,5)); % select brainmask before multiplying df/f by 100 otherwise colormap is out of range to see the brain...
 BW = roipoly;
 brainmask = BW;
@@ -40,7 +48,7 @@ end
 
 %% Slow trent correction
 
-trialidx = single(ctrials{2});
+trialidx = single(ctrials{2}(x==0));
 % 
 % for i = 1:100:size(tmp,1)
 %      QQ = single(tmp(i:i+99,:,:,:));
@@ -81,9 +89,21 @@ for i = 1:size(dFFav,3)
 end
 
 
+for i = size(tmp,3)
+    
+    filtervec = 
+
+
+
+
+for idx = 1:numel(array)
+    element = array(idx)
+
+
+
 save('FreyC2','tmp')
 save('MaskfreyC2','brainmask')
-save('MaskfreyC22','mask') % OFAMM requires the mask to be names mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
+save('MaskfreyC22','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
 
 
 %% plot quiver
