@@ -1,8 +1,8 @@
 
-load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\ThrowAwayIdx.mat')
-load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\Frey1_RawData_C2.mat')
+load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\ThrowAwayIdx.mat')
+load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey1_RawData_C2.mat')
 % load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\BASELINEMAT.mat')
-load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\Frey_20161208_B1.mat')
+load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey_20161216_B1.mat')
 
 resize=1;
 
@@ -41,12 +41,12 @@ clear tracethiscond
 I = imagesc(tmp(:,:,5,5)); % select brainmask before multiplying df/f by 100 otherwise colormap is out of range to see the brain...
 BW = roipoly;
 brainmask = BW;
-mask = brainmask;
+mask = double(brainmask);
 
 for i = 1:size(tmp,4) %loop over trials 
     
     V1 = tmp(:,:,:,i);
-    V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
+%     V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
     V1 = imgaussfilt(V1,2.5); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
@@ -89,7 +89,7 @@ clear QQ
 dFFav = dFFav(:,:,4:end); %frame 3 is bad
 
 
-xvoor = dFFav;
+xvoor = double(dFFav*10);
 % tmp = zeros(size(dFFav,1)/2,size(dFFav,2)/2,size(dFFav,3));
 
 % for i = 1:size(dFFav,3)
@@ -104,14 +104,15 @@ for i = 1:size(dFFav,1)
     end
 end
 
-xna = dFFav;
+xna = double(dFFav*10);
 
 dFFav = double(dFFav*10);
 
 
 
 
-save('FreyC2','dFFav')
+save('FreyC2','xvoor')
+save('FreyC2filteredt','xna')
 
 save('MaskfreyC22','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
 
