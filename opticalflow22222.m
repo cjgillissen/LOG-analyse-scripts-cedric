@@ -1,35 +1,42 @@
 
-load('C:\Users\gillissen\Desktop\FREYC2\ThrowAwayIdx.mat')
-load('C:\Users\gillissen\Desktop\FREYC2\Frey1_RawData_C2.mat')
-load('C:\Users\gillissen\Desktop\FREYC2\BASELINEMAT.mat')
-load('C:\Users\gillissen\Desktop\TrainingLogs\Frey_20161208_B1.mat')
+load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\ThrowAwayIdx.mat')
+load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\Frey1_RawData_C2.mat')
+% load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\BASELINEMAT.mat')
+load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\Frey_20161208_B1.mat')
+
+resize=1;
 
 x = LOG.currentdelay(ctrials{2});
 
 tracethiscond = single(conddata(:,:,:,x==0));
 clear conddata
 
-p=2; q=2;
-tmp = zeros(size(tracethiscond,1)/p,size(tracethiscond,2)/q,size(tracethiscond,3),size(tracethiscond,4));
-for i  = 1:size(tmp,4)
-    for j = 1:size(tmp,3)
-        
-        M = tracethiscond(:,:,j,i);
-        [m,n]=size(M); %M is the original matrix
-        M=sum( reshape(M,p,[]) ,1 ); % when using [] (max one in reshape)  reshape calculates the size of that dimension to ensure numel(a) ==numel(b)
-        M=reshape(M,m/p,[]).'; %Note transpose
-        M=sum( reshape(M,q,[]) ,1);
-        M=reshape(M,n/q,[]).'; %Note transpose
-        tmp(:,:,j,i) = M;
-        
+if resize
+    
+    p=2; q=2;
+    tmp = zeros(size(tracethiscond,1)/p,size(tracethiscond,2)/q,size(tracethiscond,3),size(tracethiscond,4));
+    for i  = 1:size(tmp,4)
+        for j = 1:size(tmp,3)
+
+            M = tracethiscond(:,:,j,i);
+            [m,n]=size(M); %M is the original matrix
+            M=sum( reshape(M,p,[]) ,1 ); % when using [] (max one in reshape)  reshape calculates the size of that dimension to ensure numel(a) ==numel(b)
+            M=reshape(M,m/p,[]).'; %Note transpose
+            M=sum( reshape(M,q,[]) ,1);
+            M=reshape(M,n/q,[]).'; %Note transpose
+            tmp(:,:,j,i) = M;
+
+        end
     end
+
+    else 
+
+    tmp = tracethiscond;
+    
+
 end
 
-
-
-
-
-
+clear tracethiscond
 
 I = imagesc(tmp(:,:,5,5)); % select brainmask before multiplying df/f by 100 otherwise colormap is out of range to see the brain...
 BW = roipoly;
@@ -43,7 +50,6 @@ for i = 1:size(tmp,4) %loop over trials
     V1 = imgaussfilt(V1,2.5); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
-
 
 
 %% Slow trent correction
@@ -81,28 +87,32 @@ clear QQ
 
 
 dFFav = dFFav(:,:,4:end); %frame 3 is bad
-dFFav = dFFav*100;
-tmp = zeros(size(dFFav,1)/2,size(dFFav,2)/2,size(dFFav,3));
 
-for i = 1:size(dFFav,3)
-    tmp(:,:,i) = imresize(dFFav(:,:,i),0.5);
+
+xvoor = dFFav;
+% tmp = zeros(size(dFFav,1)/2,size(dFFav,2)/2,size(dFFav,3));
+
+% for i = 1:size(dFFav,3)
+%     tmp(:,:,i) = imresize(dFFav(:,:,i),0.5);
+% end
+
+
+for i = 1:size(dFFav,1)
+    for j = 1:size(dFFav,2)
+        
+        dFFav(i,j,:) = medfilt1(dFFav(i,j,:),3);
+    end
 end
 
+xna = dFFav;
 
-for i = size(tmp,3)
-    
-    filtervec = 
-
+dFFav = double(dFFav*10);
 
 
 
-for idx = 1:numel(array)
-    element = array(idx)
 
+save('FreyC2','dFFav')
 
-
-save('FreyC2','tmp')
-save('MaskfreyC2','brainmask')
 save('MaskfreyC22','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
 
 
@@ -137,13 +147,34 @@ p = quiver(imag(uvCLG(:,:,i)),real(uvCLG(:,:,i)));
 
 
                 
-%% try whole brain now
-% with mask!
+%% create movie
 
 
 
 
+%Creating Video Writer Object
+writerObj = VideoWriter('sequence.avi');
+writerObj.FrameRate = 5;
+% Using the 'Open` method to open the file
+open(writerObj);
 
+% Creating a figure.
+% Each frame will be a figure data
+
+axis tight
+set(gca,'nextplot','replacechildren');
+set(gcf,'Renderer','zbuffer');
+
+for k = 1:size(dFFav,3)
+   imagesc(dFFav(:,:,k))
+   % Frame includes image data
+   frame = getframe;
+   % Adding the frame to the video object using the 'writeVideo' method
+   writeVideo(writerObj,frame);
+end
+
+% Closing the file and the object using the 'Close' method
+close(writerObj);
 
 
 
