@@ -1,8 +1,10 @@
 
-load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\ThrowAwayIdx.mat')
-load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey1_RawData_C2.mat')
-% load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\BASELINEMAT.mat')
-load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey_20161216_B1.mat')
+% load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\ThrowAwayIdx.mat')
+% load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey1_RawData_C2.mat')
+% % load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\BASELINEMAT.mat')
+% load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey_20161216_B1.mat')
+
+
 
 resize=1;
 
