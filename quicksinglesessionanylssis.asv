@@ -146,20 +146,16 @@ Side = [Side LOG.Side];
      for j = setupopt
        for k = sideopt
          figure;
-         histogram(guidur(strcmp(Side,k)&setup==j&~gavepassive&strcmp(Reaction,'Hit')&~passivefirst)-(valvedur(strcmp(Side,k)&setup==j&~gavepassive&strcmp(Reaction,'Hit')&~passivefirst)),0:1:20);
-         xlim([0 20])
+         histogram(guidur(strcmp(Side,k)&setup==j&~gavepassive&strcmp(Reaction,'Hit')&~passivefirst)-(valvedur(strcmp(Side,k)&setup==j&~gavepassive&strcmp(Reaction,'Hit')&~passivefirst)),0:1:50);
+         xlim([0 100])
          title(sprintf('setup %1.0f side %s',j,cell2mat(k)))
          ylabel('Frequency')
          xlabel('Gui value - measured valve opening duration ')
-         saveas(gcf,fullfile('C:\Users\gillissen\Desktop\InternshipCédric',sprintf('%s.jpg',get(get(gca,'title'),'string'))))
+         saveas(gcf,sprintf('%s.jpg',get(get(gca,'title'),'string')))
  
       end
-     end
+ end
  
- 
-     %% check passives
-     
-     
  
  
  
