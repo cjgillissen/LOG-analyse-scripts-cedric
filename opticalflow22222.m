@@ -1,31 +1,31 @@
-
-% load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\ThrowAwayIdx.mat')
-% load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey1_RawData_C2.mat')
-% % load('C:\Users\gillissen\Desktop\Optical flow data\FREYC2\BASELINEMAT.mat')
-% load('C:\Users\gillissen\Desktop\Optical flow data\Frey1216\Frey_20161216_B1.mat')
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey_20161220_B1.mat');
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey1_RawData_C1.mat')
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\ThrowAwayIdx')
 
 
 
 resize=1;
 
-x = LOG.currentdelay(ctrials{2});
-
-tracethiscond = single(conddata(:,:,:,x==0));
+x = LOG.currentdelay(ctrials{1});
+removeidxC1 = removeidx(:,1)';
+x = find(x==1500&removeidxC1==0);
+tracethiscond = double(conddata(:,:,:,x));
 clear conddata
-
+ 
 if resize
     
-    p=2; q=2;
+    p=8; q=8;
     tmp = zeros(size(tracethiscond,1)/p,size(tracethiscond,2)/q,size(tracethiscond,3),size(tracethiscond,4));
     for i  = 1:size(tmp,4)
         for j = 1:size(tmp,3)
 
             M = tracethiscond(:,:,j,i);
-            [m,n]=size(M); %M is the original matrix
-            M=sum( reshape(M,p,[]) ,1 ); % when using [] (max one in reshape)  reshape calculates the size of that dimension to ensure numel(a) ==numel(b)
-            M=reshape(M,m/p,[]).'; %Note transpose
-            M=sum( reshape(M,q,[]) ,1);
-            M=reshape(M,n/q,[]).'; %Note transpose
+%             [m,n]=size(M); %M is the original matrix
+%             M=sum( reshape(M,p,[]) ,1 ); % when using [] (max one in reshape)  reshape calculates the size of that dimension to ensure numel(a) ==numel(b)
+%             M=reshape(M,m/p,[]).'; %Note transpose
+%             M=sum( reshape(M,q,[]) ,1);
+%             M=reshape(M,n/q,[]).'; %Note transpose
+            M = imresize(M,1/p);
             tmp(:,:,j,i) = M;
 
         end
@@ -35,12 +35,11 @@ if resize
 
     tmp = tracethiscond;
     
-
 end
-
+ 
 clear tracethiscond
 
-I = imagesc(tmp(:,:,5,5)); % select brainmask before multiplying df/f by 100 otherwise colormap is out of range to see the brain...
+I = imagesc(tmp(:,:,12,1)); % select brainmask before multiplying df/f by 100 otherwise colormap is out of range to see the brain...
 BW = roipoly;
 brainmask = BW;
 mask = double(brainmask);
@@ -48,15 +47,15 @@ mask = double(brainmask);
 for i = 1:size(tmp,4) %loop over trials 
     
     V1 = tmp(:,:,:,i);
-%     V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
-    V1 = imgaussfilt(V1,2.5); %Gaussian filter
+    V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
+%     V1 = imgaussfilt(V1,2.5); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
 
 
 %% Slow trent correction
 
-trialidx = single(ctrials{2}(x==0));
+% trialidx = single(ctrials{2}(x==0));
 % 
 % for i = 1:100:size(tmp,1)
 %      QQ = single(tmp(i:i+99,:,:,:));
@@ -67,13 +66,13 @@ trialidx = single(ctrials{2}(x==0));
 % clear QQ
 
 
-for i = 1:100:size(tmp,1)
-    QQ = single(tmp(i:i+99,:,:,:));
+for i = 1:50:size(tmp,1)
+    QQ = single(tmp(i:i+49,:,:,:));
     base = single(squeeze(nanmean(QQ(:,:,timeline>=-300 & timeline<0,:),3))); %Baseline
     base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
     QQ = single(QQ(:,:,timeline>=0 &timeline<=2000,:)); %F
     QQ = (QQ - permute(repmat(base,[1,1,1,size(QQ,3)]),[1,2,4,3]))./permute(repmat(base,[1,1,1,size(QQ,3)]),[1,2,4,3]); %dF/F
-    dFFav(i:i+99,:,:) = squeeze(nanmean(QQ,4));
+    dFFav(i:i+49,:,:) = squeeze(nanmean(QQ,4));
 end
 
 clear QQ
@@ -88,34 +87,26 @@ clear QQ
 
 
 
-dFFav = dFFav(:,:,4:end); %frame 3 is bad
-
-
-xvoor = double(dFFav*10);
-% tmp = zeros(size(dFFav,1)/2,size(dFFav,2)/2,size(dFFav,3));
-
-% for i = 1:size(dFFav,3)
-%     tmp(:,:,i) = imresize(dFFav(:,:,i),0.5);
+% for i = 1:size(dFFav,1)
+%     for j = 1:size(dFFav,2)
+%         
+%         dFFav(i,j,:) = medfilt1(dFFav(i,j,:),3);
+%     end
 % end
 
-
-for i = 1:size(dFFav,1)
-    for j = 1:size(dFFav,2)
-        
-        dFFav(i,j,:) = medfilt1(dFFav(i,j,:),3);
-    end
-end
-
-xna = double(dFFav*10);
 
 dFFav = double(dFFav*10);
 
 
+colorlim = quantile(dFFav(:),0.95);
+
+dFFavbounded = dFFav;
+dFFavbounded(dFFavbounded>colorlim)=colorlim;
 
 
-save('FreyC2','xvoor')
-save('FreyC2filteredt','xna')
-
+save('FreyC2','dFFav')
+save('FreyC2bounded','dFFavbounded')
+save('dFFavhigh','dFFavhigh');
 save('MaskfreyC22','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
 
 
@@ -153,10 +144,8 @@ p = quiver(imag(uvCLG(:,:,i)),real(uvCLG(:,:,i)));
 %% create movie
 
 
-
-
 %Creating Video Writer Object
-writerObj = VideoWriter('sequence.avi');
+writerObj = VideoWriter('sequence4.avi');
 writerObj.FrameRate = 5;
 % Using the 'Open` method to open the file
 open(writerObj);
@@ -169,7 +158,7 @@ set(gca,'nextplot','replacechildren');
 set(gcf,'Renderer','zbuffer');
 
 for k = 1:size(dFFav,3)
-   imagesc(dFFav(:,:,k))
+   imagesc(dFFav(:,:,k),[0 colorlim])
    % Frame includes image data
    frame = getframe;
    % Adding the frame to the video object using the 'writeVideo' method
