@@ -1,22 +1,39 @@
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey_20161220_B1.mat');
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey1_RawData_C1.mat')
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\ThrowAwayIdx')
+% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey_20161220_B1.mat');
+% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey1_RawData_C1.mat')
+% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\ThrowAwayIdx')
+
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey1\Frey1_RawData_C2')
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey_20161121_B1.mat')
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey1\ThrowAwayIdx.mat')
+
+%concatenate blocks
+
+currentdelay = LOG.currentdelay;
+
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey_20161121_B2.mat')
+currentdelay = [currentdelay LOG.currentdelay];
 
 
 
 resize=1;
 
-x = LOG.currentdelay(ctrials{1});
-removeidxC1 = removeidx(:,1)';
-x = find(x==1500&removeidxC1==0);
-tracethiscond = double(conddata(:,:,:,x));
+x = currentdelay(ctrials{2});
+removeidxC2 = removeidx(1:length(ctrials{2}),2)';
+x = find(x==1500&removeidxC2==0);
+tracethiscond = single(conddata(:,:,:,x(1:15)));
+
+
 clear conddata
  
 if resize
     
     p=8; q=8;
     tmp = zeros(size(tracethiscond,1)/p,size(tracethiscond,2)/q,size(tracethiscond,3),size(tracethiscond,4));
+    h = waitbar(0,'Resizing...');
     for i  = 1:size(tmp,4)
+        
+        waitbar(i / size(tmp,4))
+        
         for j = 1:size(tmp,3)
 
             M = tracethiscond(:,:,j,i);
@@ -30,6 +47,7 @@ if resize
 
         end
     end
+    close(h) 
 
     else 
 
@@ -47,8 +65,8 @@ mask = double(brainmask);
 for i = 1:size(tmp,4) %loop over trials 
     
     V1 = tmp(:,:,:,i);
-    V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
-%     V1 = imgaussfilt(V1,2.5); %Gaussian filter
+%     V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
+    V1 = imgaussfilt(V1,2); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
 
@@ -65,8 +83,10 @@ end
 % 
 % clear QQ
 
+    h = waitbar(0,'dF/F...');
 
 for i = 1:50:size(tmp,1)
+    waitbar(i / size(tmp,1))
     QQ = single(tmp(i:i+49,:,:,:));
     base = single(squeeze(nanmean(QQ(:,:,timeline>=-300 & timeline<0,:),3))); %Baseline
     base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
@@ -74,7 +94,7 @@ for i = 1:50:size(tmp,1)
     QQ = (QQ - permute(repmat(base,[1,1,1,size(QQ,3)]),[1,2,4,3]))./permute(repmat(base,[1,1,1,size(QQ,3)]),[1,2,4,3]); %dF/F
     dFFav(i:i+49,:,:) = squeeze(nanmean(QQ,4));
 end
-
+close(h) 
 clear QQ
 
 
@@ -86,28 +106,30 @@ clear QQ
 % tmp = (trace-repmat(mintmp,size(trace,1),1))./repmat(difftmp,size(trace,1),1);
 
 
-
-% for i = 1:size(dFFav,1)
-%     for j = 1:size(dFFav,2)
+%filter in time
+% for i = 1:size(dFFavtimes100,1)
+%     for j = 1:size(dFFavtimes100,2)
 %         
-%         dFFav(i,j,:) = medfilt1(dFFav(i,j,:),3);
+%         dFFavtimes100(i,j,:) = medfilt1(dFFavtimes100(i,j,:),3);
 %     end
 % end
 
 
-dFFav = double(dFFav*10);
-
+dFFav = double(dFFav*100);
+% dFFavtimes100 = dFFav*100;
 
 colorlim = quantile(dFFav(:),0.95);
 
-dFFavbounded = dFFav;
-dFFavbounded(dFFavbounded>colorlim)=colorlim;
+% dFFavbounded = dFFav;
+% dFFavbounded(dFFavbounded>colorlim)=colorlim;
+% imagesc(dFFav(:,:,5),[0 colorlim]);
 
 
-save('FreyC2','dFFav')
+save('FreyC2Strategy1Double100Filtspaceandtime' ,'dFFavtimes100')
+save('FreyC2S1womaskfullsizefiltert','dFFav')
 save('FreyC2bounded','dFFavbounded')
 save('dFFavhigh','dFFavhigh');
-save('MaskfreyC22','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
+save('MaskfreyC2S1fullsize','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
 
 
 %% plot quiver
@@ -145,7 +167,7 @@ p = quiver(imag(uvCLG(:,:,i)),real(uvCLG(:,:,i)));
 
 
 %Creating Video Writer Object
-writerObj = VideoWriter('sequence4.avi');
+writerObj = VideoWriter('Strategy1gausFilttimes100.avi');
 writerObj.FrameRate = 5;
 % Using the 'Open` method to open the file
 open(writerObj);
@@ -157,8 +179,8 @@ axis tight
 set(gca,'nextplot','replacechildren');
 set(gcf,'Renderer','zbuffer');
 
-for k = 1:size(dFFav,3)
-   imagesc(dFFav(:,:,k),[0 colorlim])
+for k = 1:size(dFFavtimes100,3)
+   imagesc(dFFavtimes100(:,:,k)) %[0 colorlim])
    % Frame includes image data
    frame = getframe;
    % Adding the frame to the video object using the 'writeVideo' method
