@@ -2,7 +2,7 @@
 % load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\Frey1_RawData_C1.mat')
 % load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161220\ThrowAwayIdx')
 
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey1\Frey1_RawData_C2')
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey1\Frey1_RawData_C4')
 load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey_20161121_B1.mat')
 load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey20161121\Frey1\ThrowAwayIdx.mat')
 
@@ -17,17 +17,17 @@ currentdelay = [currentdelay LOG.currentdelay];
 
 resize=1;
 
-x = currentdelay(ctrials{2});
-removeidxC2 = removeidx(1:length(ctrials{2}),2)';
+x = currentdelay(ctrials{4});
+removeidxC2 = removeidx(1:length(ctrials{4}),4)';
 x = find(x==1500&removeidxC2==0);
-tracethiscond = single(conddata(:,:,:,x(1:15)));
+tracethiscond = single(conddata(:,:,:,x(:)));
 
 
 clear conddata
  
 if resize
     
-    p=8; q=8;
+    p=4; q=4;
     tmp = zeros(size(tracethiscond,1)/p,size(tracethiscond,2)/q,size(tracethiscond,3),size(tracethiscond,4));
     h = waitbar(0,'Resizing...');
     for i  = 1:size(tmp,4)
@@ -66,7 +66,7 @@ for i = 1:size(tmp,4) %loop over trials
     
     V1 = tmp(:,:,:,i);
 %     V1(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
-    V1 = imgaussfilt(V1,2); %Gaussian filter
+    V1 = imgaussfilt(V1,1.5); %Gaussian filter
     tmp(:,:,:,i) = V1;            
 end
 
@@ -125,11 +125,11 @@ colorlim = quantile(dFFav(:),0.95);
 % imagesc(dFFav(:,:,5),[0 colorlim]);
 
 
-save('FreyC2Strategy1Double100Filtspaceandtime' ,'dFFavtimes100')
+save('FreyC4' ,'dFFav')
 save('FreyC2S1womaskfullsizefiltert','dFFav')
 save('FreyC2bounded','dFFavbounded')
 save('dFFavhigh','dFFavhigh');
-save('MaskfreyC2S1fullsize','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
+save('MaskfreyC2S1','mask') % OFAMM requires the mask to be named mask !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!@@@##
 
 
 %% plot quiver
