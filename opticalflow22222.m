@@ -161,13 +161,21 @@ p = quiver(imag(uvCLG(:,:,i)),real(uvCLG(:,:,i)));
         axis([0 2*pi -10 10])
    end 
 
+%% Create colormaps
+
+redColorMap = [zeros(1,132),linspace(0,1,124)];
+blueColorMap =  [linspace(1,0,124),zeros(1,132)];
+greenColorMap = [zeros(1,256)];
+ActSupColorMap = [redColorMap;greenColorMap;blueColorMap];
+
+colorlim = quantile(dFFav(:),0.95);
 
                 
 %% create movie
 
 
 %Creating Video Writer Object
-writerObj = VideoWriter('Strategy1gausFilttimes100.avi');
+writerObj = VideoWriter('FreyC2.avi');
 writerObj.FrameRate = 5;
 % Using the 'Open` method to open the file
 open(writerObj);
@@ -179,8 +187,8 @@ axis tight
 set(gca,'nextplot','replacechildren');
 set(gcf,'Renderer','zbuffer');
 
-for k = 1:size(dFFavtimes100,3)
-   imagesc(dFFavtimes100(:,:,k)) %[0 colorlim])
+for k = 1:size(dFFav,3)
+   imagesc(dFFav(:,:,k),[0 colorlim]) %[0 colorlim])
    % Frame includes image data
    frame = getframe;
    % Adding the frame to the video object using the 'writeVideo' method
