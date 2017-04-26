@@ -1,7 +1,5 @@
 load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline1_0\LEFTVSRIGHT');
-
 load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\brainareamodel');
-
 load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Frey1_RawData_C1','timeline');
 timelim = [-300 2500];
 timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
@@ -25,10 +23,10 @@ areas = Model.Regions;
                 
   
       ConAreaAv = cell(length(SideOpt),length(ReactionOpt));
-      conditionFCM1 = cell(lenght(SideOpt),length(ReactionOpt));
+      corrFCM1 = cell(length(SideOpt),length(ReactionOpt));
      
  %%               
-                
+                  
                 
   for ridx = 1:length(ReactionOpt) % for each reaction
     for sideidx = 1:length(SideOpt) % for each side, this way you can iterate trough the 2x3 dFFav cell
@@ -40,44 +38,48 @@ areas = Model.Regions;
                 areaAv{areanr} = squeeze(nanmean(nanmean(tmp,1),2)); % average pixels of area
             end
              ConAreaAv{sideidx,ridx} = areaAv; % save all average area specific timeseries in the condition cell
-             
           else 
              ConAreaAv{sideidx,ridx} = nan;
           end
-          
-      end
-      
-  end
+         end
+        end
   
   % now the average timeseries for each area per condition is calculated and inside ConAreaAv
 
     for ridx = 1:length(ReactionOpt)
         for sideidx = 1:length(SideOpt)
-           if ~cellfun(@(ConAreaAv{sideidx,ridx})any(isnan(ConAreaAv{sideidx,ridx}))) % check for nans after loading in the data!!!!
-               
-               FC = nan(size(areas));
-               
-           for areanr = 1:length(areas) 
-               
-               FC(areanr) = mscohere(ConAreaAv{sideidx,ridx}{40,1},ConAreaAv{sideidx,ridx}{areanr,1});
-              
-           end
-               conditionFCM1{sideidx,ridx} = FC;
-
-            
-               else 
-               
-               conditionFCM1{sideidx,ridx} = nan;
-           end
-        end
+            tmp = ConAreaAv{sideidx,ridx};
+                if iscell(tmp)
+                   FC = nan(size(areas)); % initiliaze vector with correlation measures     
+                   
+                    for areanr = 1:length(areas)
+                        timeseries = tmp{areanr,1};
+                        if ~isnan(timeseries)
+                            FC(areanr) = corr(tmp{40,1},tmp{areanr,1});
+                        else
+                            FC(areanr) = nan;
+                        end
+                    end
+                        
+                else 
+                    FC = nan;
+                end
+                 corrFCM1{sideidx,ridx} = FC;
+                
+            end
     end
- 
-  
-  
-             
         
-        
-             
-          
+    % next up generalize so different sessions can be pooled together.
+    % generalize over different mice. 
+    % Use number of trials per condition to weigh correlation. 
+    
+    % plot the seed correlation vector onto the alan brain map.
+    % color code for r etc. 
+    
+    
+  
+    %% plot correlations 
+    
+    
           
   
