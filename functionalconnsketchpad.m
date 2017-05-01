@@ -1,8 +1,8 @@
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline1_0\LEFTVSRIGHT');
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\brainareamodel');
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Frey1_RawData_C1','timeline');
-timelim = [-300 2500];
-timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
+load('C:\Users\peter\Desktop\Frey20161121\Baseline2_1500\LEFTVSRIGHT');
+load('C:\Users\peter\Desktop\Frey20161121\brainareamodel');
+% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Frey1_RawData_C1','timeline');
+% timelim = [-300 2500];
+% timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
 %in real version here the task epochs are also defined. 0-500 visual. 500-1450 delay. 1500- onwards response period. 
 
 areas = Model.Regions;
@@ -21,9 +21,11 @@ areas = Model.Regions;
                 orientation = cellfun(@(X) X{2},conditionparts,'UniformOutput',0); %orientations
                 side = cellfun(@(X) X{4},conditionparts,'UniformOutput',0); %SIdes
                 
+                clear LEFTVSRIGHT
   
       ConAreaAv = cell(length(SideOpt),length(ReactionOpt));
       corrFCM1 = cell(length(SideOpt),length(ReactionOpt));
+      cohereFCM1 = cell(length(SideOpt),length(ReactionOpt));
      
  %%               
                   
@@ -40,32 +42,30 @@ areas = Model.Regions;
              ConAreaAv{sideidx,ridx} = areaAv; % save all average area specific timeseries in the condition cell
           else 
              ConAreaAv{sideidx,ridx} = nan;
-          end
          end
-        end
+     end
+ end
   
   % now the average timeseries for each area per condition is calculated and inside ConAreaAv
+%% Correlation
 
     for ridx = 1:length(ReactionOpt)
         for sideidx = 1:length(SideOpt)
             tmp = ConAreaAv{sideidx,ridx};
                 if iscell(tmp)
                    FC = nan(size(areas)); % initiliaze vector with correlation measures     
-                   
-                    for areanr = 1:length(areas)
+                   for areanr = 1:length(areas)
                         timeseries = tmp{areanr,1};
                         if ~isnan(timeseries)
                             FC(areanr) = corr(tmp{40,1},tmp{areanr,1});
                         else
                             FC(areanr) = nan;
                         end
-                    end
-                        
-                else 
+                   end
+                 else 
                     FC = nan;
                 end
                  corrFCM1{sideidx,ridx} = FC;
-                
             end
     end
         
@@ -77,8 +77,85 @@ areas = Model.Regions;
     % color code for r etc. 
     
     
-  
+    %% Coherence
+    
+    for ridx = 1:length(ReactionOpt)
+        for sideidx = 1:length(SideOpt)
+            tmp = ConAreaAv{sideidx,ridx};
+                if iscell(tmp)
+                   FC = cell(size(areas)); % initiliaze vector with correlation measures     
+                    for areanr = 1:length(areas)
+                        timeseries = tmp{areanr,1};
+                        if ~isnan(timeseries)
+                            FC{areanr} = mscohere(tmp{40,1},tmp{areanr,1});
+                        else
+                            FC{areanr} = nan;
+                        end
+                    end
+                 else 
+                    FC = nan;
+                end
+                 cohereFCM1{sideidx,ridx} = FC;
+         end
+    end
+      
     %% plot correlations 
+    
+    %first make figure for each condition seperate
+    % transpose corr vector. Concatinate per column. M being the areas and
+    % N being the correlations per each codintion.
+   
+   names  = Model.Rnames;
+   xticksss = names(9:30);
+   onecor = corrFCM1{1,1}; 
+   f =  figure;
+   bar(9:43,onecor(9:43));
+   
+   
+   %% plot coherence
+   
+   figure
+   
+   for i = 1:length(cohereFCM1{1,1}{3,1})
+       hold on
+       plot(1:129,cohereFCM1{1,1}{i,1})
+   end
+   
+   ref = load('refimg');
+   colorlim = [0 95];
+   ref = zeros(800,800);
+   for areanr = 1:length(areas)
+       ref(areas{areanr}==1) = onecor(areanr);
+   end
+   imagesc(ref)
+  
+   %% between conditions coherence V1 vs M1
+   figure 
+   n = 0;
+   x=cell(length(SideOpt),length(ReactionOpt)); % doesn't work
+   for ridx = 1:length(ReactionOpt)
+       for sideidx = 1:length(SideOpt)
+           n=n+1;
+           hold on
+           plot(cohereFCM1{sideidx,ridx}{11,:})
+           x{n} = sprintf('%s %s ',ReactionOpt{ridx},SideOpt{sideidx});
+       end
+   end
+           legend(ConditionNames{1:(length(SideOpt)*length(ReactionOpt))});
+           
+   
+         
+       
+       
+  
+   
+   
+   
+   
+   
+   
+    
+   
     
     
           
