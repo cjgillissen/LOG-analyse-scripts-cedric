@@ -1,5 +1,6 @@
-load('C:\Users\peter\Desktop\Frey20161121\Baseline2_1500\LEFTVSRIGHT');
-load('C:\Users\peter\Desktop\Frey20161121\brainareamodel');
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline1_1500\LEFTVSRIGHT');
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\brainareamodel');
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Frey1_RawData_C1','timeline');
 % load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Frey1_RawData_C1','timeline');
 % timelim = [-300 2500];
 % timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
