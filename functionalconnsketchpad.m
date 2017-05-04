@@ -7,7 +7,21 @@ load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey201611
 %in real version here the task epochs are also defined. 0-500 visual. 500-1450 delay. 1500- onwards response period. 
 
 areas = Model.Regions;
+brainmask = zeros(800,800);
 
+    for i = 1:length(Model.Regions)
+        Borders = Model.Boundaries{i};
+        areas{i} 
+        for j = 1:length(Borders)
+            tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
+            tmp = imfill(tmp,'holes');
+            
+            brainmask(tmp) = 1;
+        end
+        areas{i} = tmp;
+    end
+    brainmask = imfill(brainmask,'holes');
+    
                 dFFav = LEFTVSRIGHT.dFFav;
                 nrt = LEFTVSRIGHT.nrt;
                 meanRT = LEFTVSRIGHT.meanRT;
@@ -148,7 +162,10 @@ areas = Model.Regions;
          
        
        
-  
+  blaaa = zeros(800,800);
+   for i = 1:length(areas);
+       blaaa(areas{i}==1) = i;
+   end
    
    
    
