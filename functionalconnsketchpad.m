@@ -6,21 +6,24 @@ load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey201611
 % timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
 %in real version here the task epochs are also defined. 0-500 visual. 500-1450 delay. 1500- onwards response period. 
 
-areas = Model.Regions;
+
 brainmask = zeros(800,800);
 
-    for i = 1:length(Model.Regions)
-        Borders = Model.Boundaries{i};
-        areas{i} 
-        for j = 1:length(Borders)
-            tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
-            tmp = imfill(tmp,'holes');
+%% Brainmask
+            % create cell with the proper area logicals
+            areas = Model.Regions;
+            brainmask = zeros(800,800);
+            for i = 1:length(Model.Regions)
+                Borders = Model.Boundaries{i};
+                for j = 1:length(Borders)
+                    tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
+                    tmp = imfill(tmp,'holes');
+                    brainmask(tmp) = 1+i;
+                end
+            end
+            brainmask = imfill(brainmask,'holes');
             
-            brainmask(tmp) = 1;
-        end
-        areas{i} = tmp;
-    end
-    brainmask = imfill(brainmask,'holes');
+            
     
                 dFFav = LEFTVSRIGHT.dFFav;
                 nrt = LEFTVSRIGHT.nrt;
@@ -42,7 +45,8 @@ brainmask = zeros(800,800);
       corrFCM1 = cell(length(SideOpt),length(ReactionOpt));
       cohereFCM1 = cell(length(SideOpt),length(ReactionOpt));
      
- %%               
+ %% Apply brain mask and collect average timeseries per cond per area
+ % later per subject! and concatenate sessions!
                   
                 
   for ridx = 1:length(ReactionOpt) % for each reaction
@@ -51,7 +55,7 @@ brainmask = zeros(800,800);
               areaAv = cell(size(areas)); % this will contain the average timeseries of each area of a particular condition
             for areanr = 1:length(areas) % loop trough areas
                 tmp = dFFav{sideidx,ridx}; % load condition dataset
-                tmp(~repmat(areas{areanr},[1,1,size(tmp,3)]))=nan; % apply brainmask
+                tmp(~repmat(brainmask==areanr,[1,1,size(tmp,3)]))=nan; % apply brainmask
                 areaAv{areanr} = squeeze(nanmean(nanmean(tmp,1),2)); % average pixels of area
             end
              ConAreaAv{sideidx,ridx} = areaAv; % save all average area specific timeseries in the condition cell
@@ -127,7 +131,7 @@ brainmask = zeros(800,800);
    bar(9:43,onecor(9:43));
    
    
-   %% plot coherence
+   %% plot coherence on refbrain
    
    figure
    
@@ -140,9 +144,41 @@ brainmask = zeros(800,800);
    colorlim = [0 95];
    ref = zeros(800,800);
    for areanr = 1:length(areas)
-       ref(areas{areanr}==1) = onecor(areanr);
+       ref(brainmask==areanr) = onecor(areanr);
    end
    imagesc(ref)
+   
+   %% Plot correlation on refbrain
+   
+   figure
+   
+%    for i = 1:length(corrFCM1{1,1}(3,1))
+%        hold on
+%        plot(1:129,corrFCM1{1,1}(i,1))
+%    end
+   colorlim = [-1 99];
+   
+   for ridx = 1:length(ReactionOpt)
+       for sideidx = 1:length(SideOpt)
+            figure
+            ref = zeros(800,800);
+            for areanr = 1:length(areas)
+            ref(brainmask==areanr) = corrFCM1{sideidx,ridx}(areanr,1);
+            end
+            
+                imagesc(ref)
+                title(sprintf('correlation with M1 as seed %s %s',ReactionOpt{ridx},SideOpt{sideidx}))
+                
+       end
+   end
+   
+           
+   
+  
+   
+   
+   
+   
   
    %% between conditions coherence V1 vs M1
    figure 
@@ -160,12 +196,6 @@ brainmask = zeros(800,800);
            
    
          
-       
-       
-  blaaa = zeros(800,800);
-   for i = 1:length(areas);
-       blaaa(areas{i}==1) = i;
-   end
    
    
    

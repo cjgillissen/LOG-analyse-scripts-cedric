@@ -365,13 +365,14 @@ for midx = 1:nrMouse %For this mouse
             end
             
             %% Brainmask
+            % create cell with the proper area logicals
             brainmask = zeros(800,800);
             for i = 1:length(Model.Regions)
                 Borders = Model.Boundaries{i};
                 for j = 1:length(Borders)
                     tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
                     tmp = imfill(tmp,'holes');
-                    brainmask(tmp) = 1;
+                    brainmask(tmp) = 1+i;
                 end
             end
             brainmask = imfill(brainmask,'holes');
