@@ -35,10 +35,7 @@ SmallerPerf = NaN(length(Mice),length(Days));
 ZeroCuePerf = NaN(length(Mice),length(Days));
 
 for Mouseidx = 1:length(Mice)
-    
-    
-    
-    for Dayidx = 1: length(Days)
+   for Dayidx = 1: length(Days)
         
         RTleft=[];RTright=[]; %Pre allocate Licks
         ResponseCell = {}; %Preallocate for ResponseCell concatenation
@@ -93,19 +90,19 @@ for Mouseidx = 1:length(Mice)
                      
        %Calculate performance of trials defined above
                      
-delayperf = sum(find(strcmp(ResponseCell(diffidx),'Hit')))./(sum(find(strcmp(ResponseCell(diffidx),'Error')))+sum(find(strcmp(ResponseCell(diffidx),'Hit'))));
-recurrperf = sum(find(strcmp(ResponseCell(nrmlidx),'Hit')))./(sum(find(strcmp(ResponseCell(nrmlidx),'Error')))+sum(find(strcmp(ResponseCell(nrmlidx),'Hit'))));
-longerdlyperf = sum(find(strcmp(ResponseCell(longeridx),'Hit')))./(sum(find(strcmp(ResponseCell(longeridx),'Error')))+sum(find(strcmp(ResponseCell(longeridx),'Hit'))));
-smallerdlyperf = sum(find(strcmp(ResponseCell(smallerdly),'Hit')))./(sum(find(strcmp(ResponseCell(smallerdly),'Error')))+sum(find(strcmp(ResponseCell(smallerdly),'Hit'))));
-zerocuedelayperf = sum(strcmp(ResponseCell,'Hit')& currentdelay ==0)./(sum(strcmp(ResponseCell,'Error')&currentdelay ==0)+sum(strcmp(ResponseCell,'Hit')& currentdelay ==0));
-maxcuedelayperf = sum(strcmp(ResponseCell,'Hit')&currentdelay ==1500)./(sum(strcmp(ResponseCell,'Error')&currentdelay ==1500)+sum(strcmp(ResponseCell,'Hit')& currentdelay ==1500));
-
-
-ChangePerf(Mouseidx,Dayidx)=   delayperf;
-NormalPerf(Mouseidx,Dayidx)=   recurrperf;
-LongerPerf(Mouseidx,Dayidx)=   longerdlyperf;
-SmallerPerf(Mouseidx,Dayidx)=  smallerdlyperf;
-ZeroCuePerf(Mouseidx,Dayidx)=  zerocuedelayperf;
+% delayperf = sum(find(strcmp(ResponseCell(diffidx),'Hit')))./(sum(find(strcmp(ResponseCell(diffidx),'Error')))+sum(find(strcmp(ResponseCell(diffidx),'Hit'))));
+% recurrperf = sum(find(strcmp(ResponseCell(nrmlidx),'Hit')))./(sum(find(strcmp(ResponseCell(nrmlidx),'Error')))+sum(find(strcmp(ResponseCell(nrmlidx),'Hit'))));
+% longerdlyperf = sum(find(strcmp(ResponseCell(longeridx),'Hit')))./(sum(find(strcmp(ResponseCell(longeridx),'Error')))+sum(find(strcmp(ResponseCell(longeridx),'Hit'))));
+% smallerdlyperf = sum(find(strcmp(ResponseCell(smallerdly),'Hit')))./(sum(find(strcmp(ResponseCell(smallerdly),'Error')))+sum(find(strcmp(ResponseCell(smallerdly),'Hit'))));
+% zerocuedelayperf = sum(strcmp(ResponseCell,'Hit')& currentdelay ==0)./(sum(strcmp(ResponseCell,'Error')&currentdelay ==0)+sum(strcmp(ResponseCell,'Hit')& currentdelay ==0));
+% maxcuedelayperf = sum(strcmp(ResponseCell,'Hit')&currentdelay ==1500)./(sum(strcmp(ResponseCell,'Error')&currentdelay ==1500)+sum(strcmp(ResponseCell,'Hit')& currentdelay ==1500));
+% 
+% 
+% ChangePerf(Mouseidx,Dayidx)=   delayperf;
+% NormalPerf(Mouseidx,Dayidx)=   recurrperf;
+% LongerPerf(Mouseidx,Dayidx)=   longerdlyperf;
+% SmallerPerf(Mouseidx,Dayidx)=  smallerdlyperf;
+% ZeroCuePerf(Mouseidx,Dayidx)=  zerocuedelayperf;
 
                      
                  end
@@ -114,33 +111,27 @@ ZeroCuePerf(Mouseidx,Dayidx)=  zerocuedelayperf;
     end
 end
 
-        
-
-
-clrspec = {'b','r','g','p'};
-namespec = {'DiffDelay','SameDelay','LongerDelay','ShorterDelay','ZeroCueDelay','MaxCueDelay'};
-
-       
-     
-           
-%             superbar(superbar(nanmean(ChangePerf)))
-%             bar(mean(ChangePerf(i,:)));
-%             bar(mean(NormalPerf(i,:)));
-%             bar(mean(LongerPerf(i,:)));
-%             bar(mean(SmallerPerf(i,:)));
-     
-    Alladin = [nanmean(ChangePerf(1,:)) nanmean(NormalPerf(1,:)) nanmean(LongerPerf(1,:)) nanmean(SmallerPerf(1,:)) nanmean(ZeroCuePerf(1,:))];
-    Chief = [nanmean(ChangePerf(2,:)) nanmean(NormalPerf(2,:)) nanmean(LongerPerf(2,:)) nanmean(SmallerPerf(2,:)) nanmean(ZeroCuePerf(2,:))];
-    Esmeralda = [nanmean(ChangePerf(3,:)) nanmean(NormalPerf(3,:)) nanmean(LongerPerf(3,:)) nanmean(SmallerPerf(3,:)) nanmean(ZeroCuePerf(3,:))];
-    Frey = [nanmean(ChangePerf(4,:)) nanmean(NormalPerf(4,:)) nanmean(LongerPerf(4,:)) nanmean(SmallerPerf(4,:)) nanmean(ZeroCuePerf(4,:))];
-    
-                    h = bar([nanmean(ChangePerf) nanmean(NormalPerf) nanmean(LongerPerf) nanmean(SmallerPerf) nanmean(ZeroCuePerf) nanmean(maxcuedelayperf)]);
-                    xlabel('Condition')
-                    ylabel('Performance')
-                    ylim([0 1]);
-                    xticklabels(namespec);
-                    
-%                    
+% clrspec = {'b','r','g','p'};
+% namespec = {'DiffDelay','SameDelay','LongerDelay','ShorterDelay','ZeroCueDelay','MaxCueDelay'};
+% 
+% %             superbar(superbar(nanmean(ChangePerf)))
+% %             bar(mean(ChangePerf(i,:)));
+% %             bar(mean(NormalPerf(i,:)));
+% %             bar(mean(LongerPerf(i,:)));
+% %             bar(mean(SmallerPerf(i,:)));
+%      
+%     Alladin = [nanmean(ChangePerf(1,:)) nanmean(NormalPerf(1,:)) nanmean(LongerPerf(1,:)) nanmean(SmallerPerf(1,:)) nanmean(ZeroCuePerf(1,:))];
+%     Chief = [nanmean(ChangePerf(2,:)) nanmean(NormalPerf(2,:)) nanmean(LongerPerf(2,:)) nanmean(SmallerPerf(2,:)) nanmean(ZeroCuePerf(2,:))];
+%     Esmeralda = [nanmean(ChangePerf(3,:)) nanmean(NormalPerf(3,:)) nanmean(LongerPerf(3,:)) nanmean(SmallerPerf(3,:)) nanmean(ZeroCuePerf(3,:))];
+%     Frey = [nanmean(ChangePerf(4,:)) nanmean(NormalPerf(4,:)) nanmean(LongerPerf(4,:)) nanmean(SmallerPerf(4,:)) nanmean(ZeroCuePerf(4,:))];
+%     
+%                     h = bar([nanmean(ChangePerf) nanmean(NormalPerf) nanmean(LongerPerf) nanmean(SmallerPerf) nanmean(ZeroCuePerf) nanmean(maxcuedelayperf)]);
+%                     xlabel('Condition')
+%                     ylabel('Performance')
+%                     ylim([0 1]);
+%                     xticklabels(namespec);
+%                     
+% %                    
 %                     
                     
 %% Plotting bar graph
@@ -151,6 +142,40 @@ b = bar(Scores);
 legend(b,micenames)
 xticklabels(namespec)
 ylim([0 1]);
+
+
+%% normal performance line graph
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
