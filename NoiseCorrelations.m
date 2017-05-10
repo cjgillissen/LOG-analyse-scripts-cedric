@@ -367,39 +367,354 @@ for midx = 1:nrMouse %For this mouse
             %% Brainmask
             % create cell with the proper area logicals
             brainmask = zeros(800,800);
+            areamask = zeros(800,800);
             for i = 1:length(Model.Regions)
                 Borders = Model.Boundaries{i};
                 for j = 1:length(Borders)
                     tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
                     tmp = imfill(tmp,'holes');
-                    brainmask(tmp) = 1+i;
+                    areamask(tmp) = 1+i;
+                    brainmask(tmp) = 1;
                 end
             end
             brainmask = imfill(brainmask,'holes');
+        
+            
+             %% Extract raw calcium traces per trialtype per condition
+             % Apply drift correct
+             
+            if strcmp(Stim2Check,'DelayedOriTuningSound')
+                fullfgtr = find(LOG.currentdelay==trialtype & LOG.Gavepassive(LOG.RealTask==1) == 0 & LOG.Ezbox == 0 & LOG.TotalStimDur == 500);
+            else
+                if strcmp(trialtype,'FG')
+                    fullfgtr = find(LOG.BGContrast==1 & LOG.Gavepassive==0&LOG.Ezbox==0);
+                else
+                    fullfgtr = find(LOG.BGContrast==0 & LOG.Gavepassive==0&LOG.Ezbox==0);
+                end
+            end
             
             
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'))|| strcmp(button,'Redo')
+                
+                nrtr = zeros(length(ReactionOpt),length(SideOpt));
+                %Calculate minimum nr of trials for all conditoins
+                for ridx = 1:length(ReactionOpt)
+                    for stidx = 1:length(SideOpt)
+                        cidx = find(ismember(reaction,ReactionOpt{ridx})&ismember(side,SideOpt{stidx})&~ismember(orientation,'Ori500'));
+                        for ccidx = 1:length(cidx)
+                            tmp = ctrials{cidx(ccidx)};
+                            try
+                            tmp = tmp(~removeidx(1:length(tmp),cidx(ccidx))' & ismember(tmp,fullfgtr));
+                            catch ME
+                                disp(ME)
+                                keyboard
+                            end
+                            nrtr(ridx,stidx) = nrtr(ridx,stidx) + length(tmp);
+                        end
+                    end
+                end
+                nrtrials2take = min(nrtr(:));
+                if isempty(fullfgtr)
+                    disp('This session does not have trials with requested properties...')
+                    save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'),'fullfgtr')
+                    continue
+                else
+                    if isa(trialtype,'char')
+                        disp(['Only taking ' trialtype ' trials into account'])
+                    else
+                        disp(['Only taking ' num2str(trialtype) 'ms delay trials into account'])
+                    end
+                end
+                
+                %initialize
+                dFFav = cell(length(SideOpt),length(ReactionOpt));
+                nrt = dFFav;
+                meanRT = dFFav;
+                stdRT = dFFav;
+                SUMSqr = dFFav;
+                nrtPerPix = dFFav;
+                SumdFF = dFFav;
+                
+                disp('Calculating dFF for different conditions')
+                %                 makeplots = 0;
+                %                 if makeplots
+                %                 %Look at raw F
+                %                 FRAW = figure;
+                %
+                %                 %Look at individual TC vs Pixel TC
+                %                 FIV = figure;
+                %
+                %                 %Check properties of raw signal
+                %                 load(fullfile(StorePath,mouse,'Averages','ROIs.mat'))
+                %                 RV1mask = poly2mask(rois{1}.xi,rois{1}.yi,800,800);
+                %                 %Shrink to not have border effects
+                %                 RV1mask = bwmorph(RV1mask,'shrink',1);
+                %                 legendname = {};
+                %                 end
+                
+                %Calculate baseline
+                if baselinemethod==2
+                    tracesthiscond = uint8([]); %find traces
+                    rm2idx = logical([]);
+                    trialidx = [];
+                    for ridx = 1:length(ReactionOpt)
+                        for stidx = 1:length(SideOpt)
+                            ccidx = find(ismember(reaction,ReactionOpt{ridx}) & ismember(side,SideOpt{stidx}) & ~ismember(orientation,'Ori500')); %Find condition index
+                            if isempty(ccidx)
+                                continue
+                            end
+                            trialidxtmp = [];
+                            for indx = 1:length(ccidx)
+                                trialidxtmp = [trialidxtmp ctrials{ccidx}]; %trialindex
+                                rmtmp = removeidx(1:length(ctrials{ccidx(indx)}),ccidx(indx))';
+                                rm2tmp = ~ismember(ctrials{ccidx(indx)},fullfgtr);
+                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                try
+                                    if takeequalsample
+                                        tmpvec = find(rm3tmp == 0);
+                                        tmprand = randperm(length(tmpvec));
+                                        rm3tmp(tmpvec(tmprand(1:length(tmpvec)-nrtrials2take))) = 1;
+                                        savetmprand{ridx,stidx} = tmprand;
+                                    end
+                                    tracesthiscond = cat(4,tracesthiscond,RawData{ccidx(indx)}(:,:,timeline>=-300 & timeline<0,~rm3tmp));
+                                    trialidx = [trialidx trialidxtmp(~rm3tmp)];
+                                catch ME
+                                    disp(ME)
+                                    if strcmp(ME.identifier,'MATLAB:nomem')
+                                        keyboard
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    tmp =  single(tracesthiscond);
+                    tmp(tmp==0)=nan;
+                    base = tmp./permute(repmat(BASELINEMAT(:,:,trialidx),[1,1,1,size(tmp,3)]),[1,2,4,3]); %apply drift correction
+                    base = nanmean(nanmean(base,3),4);
+                end
+                for ridx = 1:length(ReactionOpt)
+                    for stidx = 1:length(SideOpt)
+                        ccidx = find(ismember(reaction,ReactionOpt{ridx}) & ismember(side,SideOpt{stidx}) & ~ismember(orientation,'Ori500')); %Find condition index
+                        
+                        if isempty(ccidx)
+                            continue
+                        end
+                        try
+                            trialidx = [ctrials{ccidx}];%trialindex
+                        catch ME
+                            disp(ME)
+                        end
+                        rm2idx = logical([]);
+                        tracesthiscond = uint8([]); %find traces
+                        for indx = 1:length(ccidx)
+                            rmtmp = removeidx(1:length(ctrials{ccidx(indx)}),ccidx(indx))';
+                            rm2tmp = ~ismember(ctrials{ccidx(indx)},fullfgtr);
+                            rm3tmp = (rmtmp==1 | rm2tmp==1);
+                            if takeequalsample
+                                tmpvec = find(rm3tmp == 0);
+                                if baselinemethod==2
+                                    tmprand=savetmprand{ridx,stidx};
+                                else
+                                    tmprand = randperm(length(tmpvec));
+                                end
+                                rm3tmp(tmpvec(tmprand(1:length(tmpvec)-nrtrials2take))) = 1;
+                            end
+                            try
+                                tracesthiscond = cat(4,tracesthiscond,RawData{ccidx(indx)}(:,:,:,~rm3tmp));
+                                rm2idx = [rm2idx, rm3tmp];
+                            catch ME
+                                disp(ME)
+%                                 if strcmp(ME.identifier,'MATLAB:nomem')
+                                    keyboard
+%                                 end
+                            end
+                            
+                        end
+                        trialidx = trialidx(~rm2idx);
+                        
+                        if isempty(trialidx)
+                            continue
+                        end
+                        
+                        %
+                        %                         if makeplots
+                        %                             tmp2 = single(tracesthiscond);
+                        %                             tmp2(tmp2==0) = nan;
+                        %                             tmp2(~repmat(RV1mask,[1,1,size(tmp2,3),size(tmp2,4)]))=nan;
+                        %
+                        %                             [sortedid idx] = sort(trialidx);
+                        %                             figure(FRAW)
+                        %                             %Take all baselines
+                        %                             subplot(2,2,1)
+                        %                             tmp = squeeze(nanmean(reshape(tmp2,[800*800,size(tmp2,3),size(tmp2,4)]),1));
+                        %                             base = squeeze(nanmean(tmp(timeline>=-300 & timeline<=0,:),1));
+                        %                             plot(sortedid,nanmean(base(:,idx),1),'-*','Color',LineMap(:,stidx*2,ridx),'MarkerSize',5,'LineWidth',2)
+                        %                             hold on
+                        %                             title('F0')
+                        %
+                        %                             subplot(2,2,2)
+                        %                             tmp = squeeze(nanmean(tmp(timeline>=80 & timeline<=200,:),1)) - base; %F-F0
+                        %                             plot(sortedid,nanmean(tmp(:,idx),1),'-*','Color',LineMap(:,stidx*2,ridx),'MarkerSize',5,'LineWidth',2)
+                        %                             title('F - F0')
+                        %                             hold on
+                        %
+                        %                             subplot(2,2,3)
+                        %                             tmp = tmp./base;
+                        %                             plot(sortedid,nanmean(tmp(:,idx),1),'-*','Color',LineMap(:,stidx*2,ridx),'MarkerSize',5,'LineWidth',2)
+                        %                             title('(F-F0)/F0')
+                        %                             hold on
+                        %
+                        %                             figure(FIV)
+                        %                             tmp = reshape(tmp2,[800*800,size(tmp2,3),size(tmp2,4)]);
+                        %                             [r] = find(~isnan(tmp(:,10,1)));
+                        %
+                        %                             %Pick 5 neighbouring pixels
+                        %                             randchoose = randsample(r,1);
+                        %
+                        %                             subplot(2,2,1)
+                        %                             tmp = tmp(randchoose-2:randchoose+2,timeline>=-300 & timeline<=0,1);
+                        %                             plot(repmat(timeline(timeline>=-300 & timeline<=0),[size(tmp,1),1])',tmp')
+                        %                             xlabel('Time')
+                        %                             ylabel('F')
+                        %                             tmp = reshape(tmp2,[800*800,size(tmp2,3),size(tmp2,4)]);
+                        %                             randchoose = randsample(r(50:end-50),1);
+                        %                             tmp = reshape(tmp(randchoose-50:randchoose+50,timeline>=-300 & timeline<=0,:),[101,length(timeline(timeline>=-300 & timeline<=0))*size(tmp,3)]);
+                        %
+                        %                             cormat = cov(tmp');
+                        %                             subplot(2,2,2); imagesc(cormat,[-15 60])
+                        %                             title('Covariance over time between pixels')
+                        %                             xlabel('Distance between pixels')
+                        %                             colorbar
+                        %
+                        %                             tmp = reshape(tmp2,[800*800,size(tmp2,3),size(tmp2,4)]);
+                        %
+                        %                             subplot(2,2,3)
+                        %                             tmp = tmp(randchoose-2:randchoose+2,timeline>=80 & timeline<=250,1);
+                        %                             plot(repmat(timeline(timeline>=80 & timeline<=250),[size(tmp,1),1])',tmp')
+                        %                             xlabel('Time')
+                        %                             ylabel('F')
+                        %                             tmp = reshape(tmp2,[800*800,size(tmp2,3),size(tmp2,4)]);
+                        %                             randchoose = randsample(r(50:end-50),1);
+                        %                             tmp = reshape(tmp(randchoose-50:randchoose+50,timeline>=80 & timeline<=250,:),[101,length(timeline(timeline>=80 & timeline<=250))*size(tmp,3)]);
+                        %
+                        %                             cormat = cov(tmp');
+                        %                             subplot(2,2,4); imagesc(cormat,[-15 60])
+                        %                             title('Covariance over time between pixels')
+                        %                             xlabel('Distance between pixels')
+                        %                             colorbar
+                        %
+                        %                         end
+                        try
+                            tracesthiscond = single(tracesthiscond); %make single
+                            tracesthiscond(tracesthiscond==0) = nan;
+                        catch ME
+                            if strcmp(ME.identifier,'MATLAB:nomem')
+                                for i = 1:size(tracesthiscond,4)
+                                    tmp = tracesthiscond(:,:,:,i);
+                                    tmp(tmp==0) = nan;
+                                    tracesthiscond(:,:,:,i) = tmp;
+                                end
+                            else
+                                disp(ME)
+                                keyboard
+                            end
+                        end
+                        
+                        
+                        for i = 1:size(tracesthiscond,4)
+                            % Apply brainmask
+                            tmp = tracesthiscond(:,:,:,i);
+                            tmp(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
+                            tracesthiscond(:,:,:,i) = imgaussfilt(tmp,smoothfact); %Gaussian filter
+                            
+                        end
+                        
+                        
+                        for i = 1:100:size(tracesthiscond,1) %Can't do the whole dataset in one go, internal conversion to double?
+                            % Extract data
+                            tmp = tracesthiscond(i:i+99,:,:,:);
+                            
+                            %dFF
+                            if baselinemethod==1 % dFF (After drift correction) a trial specific baseline
+                                %Slow trent correction
+                                tmp = tmp ./ permute(repmat(BASELINEMAT(i:i+99,:,trialidx),[1,1,1,size(tmp,3)]),[1,2,4,3]);
+                                base = single(squeeze(nanmean(tmp(:,:,timeline>=-300 & timeline<0,:),3))); %Baseline
+                                base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
+                                tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
+                                tmp = (tmp - permute(repmat(base,[1,1,1,size(tmp,3)]),[1,2,4,3]))./permute(repmat(base,[1,1,1,size(tmp,3)]),[1,2,4,3]); %dF/F
+                            elseif baselinemethod==2 % Only drift correction, then use average baseline
+                                %Slow trent correction
+                                tmp = tmp ./ permute(repmat(BASELINEMAT(i:i+99,:,trialidx),[1,1,1,size(tmp,3)]),[1,2,4,3]);
+                                tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
+                                tmp = (tmp - repmat(base(i:i+99,:),[1,1,size(tmp,3),size(tmp,4)]))./repmat(base(i:i+99,:),[1,1,size(tmp,3),size(tmp,4)]); %dF/F
+                            elseif baselinemethod == 3 %no detrending, only average baseline
+                                base = single(squeeze(nanmean(BASELINEMAT(i:i+99,:,:),3))); %Baseline
+                                base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
+                                tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
+                                tmp = (tmp - repmat(base,[1,1,size(tmp,3),size(tmp,4)]))./repmat(base,[1,1,size(tmp,3),size(tmp,4)]); %dF/F
+                            end
+                            dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
+                            SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
+                            SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials
+                            nrtPerPix{stidx,ridx}(i:i+99,:,:) = size(tracesthiscond,4) - sum(isnan(tmp),4); %
+                        end
+                        nrt{stidx,ridx} = size(tracesthiscond,4);
+                        
+                        % RT
+                        meanRT{stidx,ridx} = nanmean([LOG.RT(trialidx)]);
+                        stdRT{stidx,ridx} = nanstd([LOG.RT(trialidx)]);
+                        
+                    end
+                end
+                %                 if makeplots
+                %                     figure(FRAW)
+                %                     hplot = subplot(2,2,4);
+                %                     posleg = get(gca,'Position');
+                %                     delete(hplot)
+                %                     legend(legendname,'Position',posleg)
+                %                     suplabel('Trial number','x')
+                %                 end
+                %Save data
+                LEFTVSRIGHT.dFFav = dFFav;
+                LEFTVSRIGHT.nrt = nrt;
+                LEFTVSRIGHT.meanRT = meanRT;
+                LEFTVSRIGHT.stdRT = stdRT;
+                LEFTVSRIGHT.ReactionOpt = ReactionOpt;
+                LEFTVSRIGHT.SideOpt = SideOpt;
+                LEFTVSRIGHT.ConditionNames = ConditionNames;
+                LEFTVSRIGHT.SUMSqr = SUMSqr;
+                LEFTVSRIGHT.SumdFF = SumdFF;
+                LEFTVSRIGHT.nrtPerPix = nrtPerPix;
+                
+                save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE ,'_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT'),'LEFTVSRIGHT','-v7.3')
+                
+            end
         end
     end
 end
+
 end
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+     
             
             %% 
             
