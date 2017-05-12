@@ -1,4 +1,4 @@
-function NoiseCorrelations(info,miceopt,StorePath,DataDirectory,Stim2Check,baselinemethod,trialtype,timelim,smoothfact,takeequalsample,Redo)
+function [corrmat] = NoiseCorrelations(info,miceopt,StorePath,DataDirectory,Stim2Check,baselinemethod,trialtype,timelim,smoothfact,takeequalsample,Redo,seed)
 global UserQuestions
 %Make colormaps
 redColorMap = [zeros(1,132),linspace(0,1,124)];
@@ -381,7 +381,7 @@ for midx = 1:nrMouse %For this mouse
         
             
              %% Extract raw calcium traces per trialtype per condition
-             % Apply drift correct
+             % Don't apply drift correction, just trial specific baseline
              
             if strcmp(Stim2Check,'DelayedOriTuningSound')
                 fullfgtr = find(LOG.currentdelay==trialtype & LOG.Gavepassive(LOG.RealTask==1) == 0 & LOG.Ezbox == 0 & LOG.TotalStimDur == 500);
@@ -435,6 +435,8 @@ for midx = 1:nrMouse %For this mouse
                 SUMSqr = dFFav;
                 nrtPerPix = dFFav;
                 SumdFF = dFFav;
+                
+                
                 
                 disp('Calculating dFF for different conditions')
                 %                 makeplots = 0;
@@ -647,17 +649,46 @@ for midx = 1:nrMouse %For this mouse
                                 %Slow trent correction
                                 tmp = tmp ./ permute(repmat(BASELINEMAT(i:i+99,:,trialidx),[1,1,1,size(tmp,3)]),[1,2,4,3]);
                                 tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
-                                tmp = (tmp - repmat(base(i:i+99,:),[1,1,size(tmp,3),size(tmp,4)]))./repmat(base(i:i+99,:),[1,1,size(tmp,3),size(tmp,4)]); %dF/F
+%                                 tmp = (tmp - repmat(base(i:i+99,:),[1,1,size(tmp,3),size(tmp,4)]))./repmat(base(i:i+99,:),[1,1,size(tmp,3),size(tmp,4)]); %dF/F
                             elseif baselinemethod == 3 %no detrending, only average baseline
                                 base = single(squeeze(nanmean(BASELINEMAT(i:i+99,:,:),3))); %Baseline
                                 base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
                                 tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
-                                tmp = (tmp - repmat(base,[1,1,size(tmp,3),size(tmp,4)]))./repmat(base,[1,1,size(tmp,3),size(tmp,4)]); %dF/F
+                                tmp = (tmp - repmat(base,[1,1,size(tmp,3),size(tmp,4)]))./repmat(base,[1,1,size(tmp,3),size(tmp,4)]); %dF/F 
                             end
+                            
+                            
+                            [row,column] = find(seed);
+                            trialbytrialavg = cell(size(row,column));
+                               for i = 1:size(tmp,4);
+                                   for n = 1:length(row)
+                                       for m = length(column);
+                                           trialbytrialavg(row,column) = nanmean(tmp(row,column,:,i),3);
+                                       end
+                                   end
+                               end
+                               
+                              
+                                           
+                                   
+                                
+                            
+                            
+                             
+                            
+                            
                             dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
                             SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
                             SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials
                             nrtPerPix{stidx,ridx}(i:i+99,:,:) = size(tracesthiscond,4) - sum(isnan(tmp),4); %
+                            
+                            
+                            
+                            
+                            
+                            
+                            
+                           
                         end
                         nrt{stidx,ridx} = size(tracesthiscond,4);
                         
@@ -667,28 +698,8 @@ for midx = 1:nrMouse %For this mouse
                         
                     end
                 end
-                %                 if makeplots
-                %                     figure(FRAW)
-                %                     hplot = subplot(2,2,4);
-                %                     posleg = get(gca,'Position');
-                %                     delete(hplot)
-                %                     legend(legendname,'Position',posleg)
-                %                     suplabel('Trial number','x')
-                %                 end
-                %Save data
-                LEFTVSRIGHT.dFFav = dFFav;
-                LEFTVSRIGHT.nrt = nrt;
-                LEFTVSRIGHT.meanRT = meanRT;
-                LEFTVSRIGHT.stdRT = stdRT;
-                LEFTVSRIGHT.ReactionOpt = ReactionOpt;
-                LEFTVSRIGHT.SideOpt = SideOpt;
-                LEFTVSRIGHT.ConditionNames = ConditionNames;
-                LEFTVSRIGHT.SUMSqr = SUMSqr;
-                LEFTVSRIGHT.SumdFF = SumdFF;
-                LEFTVSRIGHT.nrtPerPix = nrtPerPix;
-                
-                save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE ,'_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT'),'LEFTVSRIGHT','-v7.3')
-                
+             
+               
             end
         end
     end
