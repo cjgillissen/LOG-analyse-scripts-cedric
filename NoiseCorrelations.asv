@@ -435,7 +435,7 @@ for midx = 1:nrMouse %For this mouse
                 SUMSqr = dFFav;
                 nrtPerPix = dFFav;
                 SumdFF = dFFav;
-                Trialavg = dFFav;
+                
                 
                 
                 disp('Calculating dFF for different conditions')
@@ -656,8 +656,7 @@ for midx = 1:nrMouse %For this mouse
                                 tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
                                 tmp = (tmp - repmat(base,[1,1,size(tmp,3),size(tmp,4)]))./repmat(base,[1,1,size(tmp,3),size(tmp,4)]); %dF/F 
                             end
-                           
-                           Trialavg{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,3); %average trial timeseries
+                            
                            dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
                            SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
                            SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials

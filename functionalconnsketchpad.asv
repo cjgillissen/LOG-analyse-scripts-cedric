@@ -112,15 +112,22 @@ brainmask = zeros(800,800);
             seedtemp = squeeze(nanmean(seedtemp,2));
             
             FC = nan(size(tmp)); % initiliaze vector with correlation measures     
-                for pixelx = 1:size(tmp,1)
-                    for pixely = 1:size(tmp,2) 
+                for pixely = 1:size(tmp,1)
+                    for pixelx = 1:size(tmp,2) 
                      
                     Seedpixelcorr{sideidx,ridx}(pixely,pixelx) = corr(seedtemp,squeeze(tmp(pixelx,pixely,:)));
                     end
                 end
         end
       end
-                      
+      
+                        
+                        
+                        
+                        
+     
+                        
+                        
                         %% Coherence
     
     for ridx = 1:length(ReactionOpt)
