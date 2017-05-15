@@ -198,12 +198,6 @@ brainmask = zeros(800,800);
    end
    
            
-   
-  
-   
-   
-   
-   
   
    %% between conditions coherence V1 vs M1
    figure 

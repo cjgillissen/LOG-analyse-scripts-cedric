@@ -436,6 +436,9 @@ for midx = 1:nrMouse %For this mouse
                 nrtPerPix = dFFav;
                 SumdFF = dFFav;
                 Trialavg = dFFav;
+                TrialavgVisual = dFFav;
+                TrialavgResp = dFFav;
+                TrialavgDelay = dFFav;
                 
                 
                 disp('Calculating dFF for different conditions')
@@ -655,9 +658,20 @@ for midx = 1:nrMouse %For this mouse
                                 base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
                                 tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
                                 tmp = (tmp - repmat(base,[1,1,size(tmp,3),size(tmp,4)]))./repmat(base,[1,1,size(tmp,3),size(tmp,4)]); %dF/F 
+                            elseif baselinemethod == 4 % only trial specific baseline
+                                base = single(squeeze(nanmean(tmp(:,:,timeline>=-300 & timeline<0,:),3))); %Baseline
+                                base(base==0) = nan; %Remove 0 and make nan; cannot divide by 0
+                                tmp = single(tmp(:,:,timeline>=timelim(1) &timeline<=timelim(2),:)); %F
+                                tmp = (tmp - permute(repmat(base,[1,1,1,size(tmp,3)]),[1,2,4,3]))./permute(repmat(base,[1,1,1,size(tmp,3)]),[1,2,4,3]); %dF/F
+
                             end
                            
-                           Trialavg{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,3); %average trial timeseries
+                           TrialavgVisual{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,6:12),3)); %average trial timeseries
+%                            TrialavgResp{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,30:35,3)); %average trial timeseries
+%                            if trialtype ==1500
+%                                TrialavgDelay{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,,3));
+%                            end
+                           Trialavg = squeeze(nanmean(tmp,3));
                            dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
                            SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
                            SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials
@@ -673,6 +687,7 @@ for midx = 1:nrMouse %For this mouse
                 end
                 
                 NoiseCorr.Trialavg = Trialavg;
+                NoiseCorr.TrialavgVisual = TrialavgVisual;
                 NoiseCorr.dFFav = dFFav;
                 NoiseCorr.nrt = nrt;
                 NoiseCorr.meanRT = meanRT;
