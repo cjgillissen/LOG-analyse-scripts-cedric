@@ -22,11 +22,11 @@ end
 paths = info.paths;
 logs = info.logs;
 nrMouse = size(paths,1);
-for midx = 1:nrMouse %For this mouse
+for midx = 1 %For this mouse
     if sum(~cellfun(@isempty, {logs{midx,:,:}})) < 1 %If not recorded that day, skip
         continue
     end
-    mouse = miceopt{midx};
+    mouse = 'Frey';
     referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
     for didx = 1:size(logs,2) %Loop over days
         if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
@@ -195,71 +195,75 @@ for midx = 1:nrMouse %For this mouse
                 
                 timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
                 
-                %% Get rid of motion trials
-                if UserQuestions
-                    mbutton = questdlg('Which motion recording method was used?','Motiontype','FG_Ulf','FG_Chris','WM_Chris','FG_Chris');
-                elseif ~UserQuestions && strcmp(Stim2Check,'FGTask')
-                    mbutton = 'FG_Chris';
-                else
-                    mbutton = 'WM_Chris';
-                end
                 
-                if strcmp(mbutton,'FG_Ulf')
-                    movepath = fullfile(DataDirectory,'Motionlogs (motion ONLY_Ulf''s method)',mouse);
-                    newdateform = date;
-                    tmpdir = dir(fullfile(movepath,'*.mat'));
-                elseif strcmp(mbutton,'FG_Chris')
-                    movepath = fullfile(DataDirectory,'Eye + Motion Data (CvdT method)',mouse);
-                    newdateform = [date(1:4) '_' date(5:6) '_' date(7:8)];
-                    tmpdir = dir(fullfile(movepath,'*.dat'));
-                elseif strcmp(mbutton,'WM_Chris')
-                    movepath = fullfile(DataDirectory,'Eye_and_Motion',mouse);
-                    movepath2 = strsplit(movepath,'Imaging\');
-                    movepath = [movepath2{:}];
-                    newdateform = [date(1:4) '_' date(5:6) '_' date(7:8)];
-                    tmpdir = dir(fullfile(movepath,'*.dat'));
-                end
                 
-                ids = strfind({tmpdir(:).name},newdateform);
                 
-                %If multiple, search the one with the matching session nr.
-                if isfield(LOG,'subsess')
-                    if ischar(LOG.subsess)
-                        tmpses = num2cell(LOG.subsess);
-                        LOG.subsess = cellfun(@str2num,tmpses(~cellfun(@(X) ismember(X,''),tmpses)),'UniformOutput',1);
-                    end
-                    sess = unique(LOG.subsess);
-                    if sum(~cell2mat(cellfun(@isempty,ids,'UniformOutput',0)))>1
-                        ids2 = strfind({tmpdir(:).name},['B' num2str(sess(1))]);
-                        ids(cellfun(@isempty,ids2)) = {[]};
-                    end
-                else
-                    sess = [];
-                    if sum(~cell2mat(cellfun(@isempty,ids,'UniformOutput',0)))>1
-                        ids2 = strfind({tmpdir(:).name},['B' num2str(expnr)]);
-                        ids(cellfun(@isempty,ids2)) = {[]};
-                    end
-                end
-                try
-                    [MoveMat,PupilMat]= extractmotion(fullfile(movepath,tmpdir(~cellfun(@isempty, ids)).name),mbutton,LOG,timeline,ctrials);
-                catch ME
-                    disp(ME)
-                    keyboard
-                end
-                DifMotion = abs(cat(1,zeros(1,size(MoveMat,2),size(MoveMat,3)),diff(MoveMat,[],1)));
-                clear zpupil
-                for tmpi = 1:size(PupilMat,4)
-                    tmp = PupilMat(:,:,:,tmpi);
-                    zpupil(:,:,:,tmpi) = (tmp - repmat(nanmean(tmp(:)),[size(tmp,1),size(tmp,2),size(tmp,3)]))./repmat(nanstd(tmp(:)),[size(tmp,1),size(tmp,2),size(tmp,3)]);
-                end
-            else
-                %                 names = dir(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],[mouse num2str(expnr) '_RawData_*.mat']));
-                %                 tmp2 = cellfun(@(X) strsplit(X,'.mat'),{names(:).name},'UniformOutput',0);
-                %                 tmp2 = cellfun(@(X) strsplit(X{1},'C'),tmp2,'UniformOutput',0);
-                %                 [tmp2 idx]= max(cell2mat(cellfun(@(X) str2num(X{2}),tmp2,'UniformOutput',0)));
-                %
-                %                 load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],names(idx).name))
-            end
+                    %% Get rid of motion trials
+                    
+%                 if UserQuestions
+%                     mbutton = questdlg('Which motion recording method was used?','Motiontype','FG_Ulf','FG_Chris','WM_Chris','FG_Chris');
+%                 elseif ~UserQuestions && strcmp(Stim2Check,'FGTask')
+%                     mbutton = 'FG_Chris';
+%                 else
+%                     mbutton = 'WM_Chris';
+%                 end
+%                 
+%                 if strcmp(mbutton,'FG_Ulf')
+%                     movepath = fullfile(DataDirectory,'Motionlogs (motion ONLY_Ulf''s method)',mouse);
+%                     newdateform = date;
+%                     tmpdir = dir(fullfile(movepath,'*.mat'));
+%                 elseif strcmp(mbutton,'FG_Chris')
+%                     movepath = fullfile(DataDirectory,'Eye + Motion Data (CvdT method)',mouse);
+%                     newdateform = [date(1:4) '_' date(5:6) '_' date(7:8)];
+%                     tmpdir = dir(fullfile(movepath,'*.dat'));
+%                 elseif strcmp(mbutton,'WM_Chris')
+%                     movepath = fullfile(DataDirectory,'Eye_and_Motion',mouse);
+%                     movepath2 = strsplit(movepath,'Imaging\');
+%                     movepath = [movepath2{:}];
+%                     newdateform = [date(1:4) '_' date(5:6) '_' date(7:8)];
+%                     tmpdir = dir(fullfile(movepath,'*.dat'));
+%                 end
+%                 
+%                 ids = strfind({tmpdir(:).name},newdateform);
+%                 
+%                 %If multiple, search the one with the matching session nr.
+%                 if isfield(LOG,'subsess')
+%                     if ischar(LOG.subsess)
+%                         tmpses = num2cell(LOG.subsess);
+%                         LOG.subsess = cellfun(@str2num,tmpses(~cellfun(@(X) ismember(X,''),tmpses)),'UniformOutput',1);
+%                     end
+%                     sess = unique(LOG.subsess);
+%                     if sum(~cell2mat(cellfun(@isempty,ids,'UniformOutput',0)))>1
+%                         ids2 = strfind({tmpdir(:).name},['B' num2str(sess(1))]);
+%                         ids(cellfun(@isempty,ids2)) = {[]};
+%                     end
+%                 else
+%                     sess = [];
+%                     if sum(~cell2mat(cellfun(@isempty,ids,'UniformOutput',0)))>1
+%                         ids2 = strfind({tmpdir(:).name},['B' num2str(expnr)]);
+%                         ids(cellfun(@isempty,ids2)) = {[]};
+%                     end
+%                 end
+%                 try
+%                     [MoveMat,PupilMat]= extractmotion(fullfile(movepath,tmpdir(~cellfun(@isempty, ids)).name),mbutton,LOG,timeline,ctrials);
+%                 catch ME
+%                     disp(ME)
+%                     keyboard
+%                 end
+%                 DifMotion = abs(cat(1,zeros(1,size(MoveMat,2),size(MoveMat,3)),diff(MoveMat,[],1)));
+%                 clear zpupil
+%                 for tmpi = 1:size(PupilMat,4)
+%                     tmp = PupilMat(:,:,:,tmpi);
+%                     zpupil(:,:,:,tmpi) = (tmp - repmat(nanmean(tmp(:)),[size(tmp,1),size(tmp,2),size(tmp,3)]))./repmat(nanstd(tmp(:)),[size(tmp,1),size(tmp,2),size(tmp,3)]);
+%                 end
+%             else
+%                 %                 names = dir(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],[mouse num2str(expnr) '_RawData_*.mat']));
+%                 %                 tmp2 = cellfun(@(X) strsplit(X,'.mat'),{names(:).name},'UniformOutput',0);
+%                 %                 tmp2 = cellfun(@(X) strsplit(X{1},'C'),tmp2,'UniformOutput',0);
+%                 %                 [tmp2 idx]= max(cell2mat(cellfun(@(X) str2num(X{2}),tmp2,'UniformOutput',0)));
+%                 %
+%                 %                 load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],names(idx).name))
+%             end
             
             %% Motion split
             if ~Redo && exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],'ThrowAwayIdx.mat'))
@@ -666,12 +670,12 @@ for midx = 1:nrMouse %For this mouse
 
                             end
                            
-                           TrialavgVisual{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,6:12),3)); %average trial timeseries
+                           TrialavgVisual{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,6:12,:),3)); %average trial timeseries
 %                            TrialavgResp{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,30:35,3)); %average trial timeseries
 %                            if trialtype ==1500
 %                                TrialavgDelay{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,,3));
 %                            end
-                           Trialavg = squeeze(nanmean(tmp,3));
+                           Trialavg{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp,3));
                            dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
                            SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
                            SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials
