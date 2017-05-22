@@ -144,16 +144,16 @@ for midx = 1 %For this mouse
             end
             
             %% Load different conditions
-            if  ~Redo && exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'))
+            if  ~Redo && exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'NoiseCorr.mat'))
                 if UserQuestions
-                    button = questdlg(['LEFTVSRIGHT.mat detected, want to redo?' fullfile(StorePath, mouse, [mouse date], [mouse num2str(expnr)])],'Data Redo', 'Redo','Keep current','Keep current');
+                    button = questdlg(['NoiseCorr.mat detected, want to redo?' fullfile(StorePath, mouse, [mouse date], [mouse num2str(expnr)])],'Data Redo', 'Redo','Keep current','Keep current');
                 else
                     button = 'Keep current';
                 end
             else
                 button = 'Redo';
             end
-            if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat')) || strcmp(button,'Redo')
+            if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'NoiseCorr.mat')) || strcmp(button,'Redo')
                 clear RawData
                 countermin = 0;
                 for cidx = 1:length(cvec)
@@ -399,7 +399,7 @@ for midx = 1 %For this mouse
             
             
             
-            if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'))|| strcmp(button,'Redo')
+            if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'NoiseCorr.mat'))|| strcmp(button,'Redo')
                 
                 nrtr = zeros(length(ReactionOpt),length(SideOpt));
                 %Calculate minimum nr of trials for all conditoins
@@ -421,7 +421,7 @@ for midx = 1 %For this mouse
                 nrtrials2take = min(nrtr(:));
                 if isempty(fullfgtr)
                     disp('This session does not have trials with requested properties...')
-                    save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'),'fullfgtr')
+                    save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'NoiseCorr.mat'),'fullfgtr')
                     continue
                 else
                     if isa(trialtype,'char')
@@ -443,7 +443,7 @@ for midx = 1 %For this mouse
                 TrialavgVisual = dFFav;
                 TrialavgResp = dFFav;
                 TrialavgDelay = dFFav;
-                
+                zeesc = dFFav;
                 
                 disp('Calculating dFF for different conditions')
                 %                 makeplots = 0;
@@ -676,10 +676,12 @@ for midx = 1 %For this mouse
 %                                TrialavgDelay{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,,3));
 %                            end
                            Trialavg{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp,3));
+                           zeesc{stidx,ridx}(i:i+99,:,:) = zscore(squeeze(nanmean(tmp,3)));
                            dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
                            SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
                            SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials
-                           nrtPerPix{stidx,ridx}(i:i+99,:,:) = size(tracesthiscond,4) - sum(isnan(tmp),4); %    
+                           nrtPerPix{stidx,ridx}(i:i+99,:,:) = size(tracesthiscond,4) - sum(isnan(tmp),4); %  
+                           
                         end
                            nrt{stidx,ridx} = size(tracesthiscond,4);
 
@@ -701,7 +703,7 @@ for midx = 1 %For this mouse
                 NoiseCorr.ConditionNames = ConditionNames;
                 NoiseCorr.SUMSqr = SUMSqr;
                 NoiseCorr.SumdFF = SumdFF;
-                
+                NoiseCorr.zeesc = zeesc;
                 
                 save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE ,'_eqsample' num2str(takeequalsample)],'NoiseCorr'),'NoiseCorr','-v7.3')
                 
