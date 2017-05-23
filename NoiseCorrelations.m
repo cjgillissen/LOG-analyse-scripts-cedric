@@ -440,9 +440,6 @@ for midx = 1 %For this mouse
                 nrtPerPix = dFFav;
                 SumdFF = dFFav;
                 Trialavg = dFFav;
-                TrialavgVisual = dFFav;
-                TrialavgResp = dFFav;
-                TrialavgDelay = dFFav;
                 zeesc = dFFav;
                 
                 disp('Calculating dFF for different conditions')
@@ -670,13 +667,8 @@ for midx = 1 %For this mouse
 
                             end
                            
-                           TrialavgVisual{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,6:12,:),3)); %average trial timeseries
-%                            TrialavgResp{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,30:35,3)); %average trial timeseries
-%                            if trialtype ==1500
-%                                TrialavgDelay{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp(:,:,,3));
-%                            end
                            Trialavg{stidx,ridx}(i:i+99,:,:) = squeeze(nanmean(tmp,3));
-                           zeesc{stidx,ridx}(i:i+99,:,:) = zscore(squeeze(nanmean(tmp,3)));
+                           zeesc{stidx,ridx}(i:i+99,:,:) = zscore(Trialavg{stidx,ridx}(i:i+99,:,:),0,3);
                            dFFav{stidx,ridx}(i:i+99,:,:) = nanmean(tmp,4); %average over trials
                            SUMSqr{stidx,ridx}(i:i+99,:,:) = nansum(tmp.^2,4);      %Sum of squared dFF values (for z-score calculations)
                            SumdFF{stidx,ridx}(i:i+99,:,:) = nansum(tmp,4); %Sum of trials
@@ -693,7 +685,6 @@ for midx = 1 %For this mouse
                 end
                 
                 NoiseCorr.Trialavg = Trialavg;
-                NoiseCorr.TrialavgVisual = TrialavgVisual;
                 NoiseCorr.dFFav = dFFav;
                 NoiseCorr.nrt = nrt;
                 NoiseCorr.meanRT = meanRT;
@@ -701,8 +692,6 @@ for midx = 1 %For this mouse
                 NoiseCorr.ReactionOpt = ReactionOpt;
                 NoiseCorr.SideOpt = SideOpt;
                 NoiseCorr.ConditionNames = ConditionNames;
-                NoiseCorr.SUMSqr = SUMSqr;
-                NoiseCorr.SumdFF = SumdFF;
                 NoiseCorr.zeesc = zeesc;
                 
                 save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE ,'_eqsample' num2str(takeequalsample)],'NoiseCorr'),'NoiseCorr','-v7.3')

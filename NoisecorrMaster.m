@@ -17,7 +17,7 @@ RedoAll = 0;
 addpath(genpath(Scriptsdir))
 global UserQuestions %Defines whether gui's show up to ask what to do with existing datasets. If 0, existing datasets are used and not overwritten
 UserQuestions =0;
-
+  
 %% Make info file
 % info = BuildInfo(miceopt,DataDirectory,storepath,Stim2Check); %Get all logs of WM-imaging sessions
 % save(fullfile(storepath,'sessionstruct'),'info')
@@ -28,9 +28,8 @@ info.paths = info.paths(4,7,1);
 %% Noise Correlations
 
 trialtype = 1500;
-timelim = [0 600];
-NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,trialtype,timelim,smoothfact,takeequalsample,RedoAll)
-
+timelim = [0 500];
+NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,trialtype,timelim,smoothfact,takeequalsample,RedoAll)                   
  %% Load the NoiseCorr structs... 
  % Generalize code
  % If only interested in visual processing than concatenate the 1500 and 0
@@ -54,7 +53,7 @@ brainmask = zeros(800,800);
                 for j = 1:length(Borders)
                     tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
                     tmp = imfill(tmp,'holes');
-                    brainmask(tmp) = 1+i;
+                    brainmask(tmp) = 0+i;
                 end
             end
             brainmask = imfill(brainmask,'holes');
@@ -67,7 +66,7 @@ brainmask = zeros(800,800);
                 stdRT = NoiseCorr.stdRT;
                 SideOpt = NoiseCorr.SideOpt;
                 ReactionOpt = NoiseCorr.ReactionOpt;
-                Visualavg = NoiseCorr.TrialavgVisual;
+                Visualavg = NoiseCorr.Trialavg;
                 
                 ConditionNames =  NoiseCorr.ConditionNames;
                 
@@ -85,7 +84,7 @@ brainmask = zeros(800,800);
 
 %% Noise Correlation per pixel
  
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline4_0_eqsample0\NoiseCorr');
+% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline4_0_eqsample0\NoiseCorr');
 
 
      fig = imagesc(brainmask);
@@ -114,17 +113,37 @@ load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey201611
       
       
       
-      %% Pairwise Noise correlations
+      %% Pairwise Noise correlations between pixels of different areas
       % For every pair of pixels correlate noise correlations per condition
       % Per area otherwise too many pairs??
-      
-      corrmat = cell(size(unique(brainmask)));
-      
-      x = length(find(brainmask==30));
+     
+      CorrCond = cell(length(SideOpt),length(ReactionOpt));
       
       
-      
-      
+      selectseed = listdlg('PromptString','Select one seed area:',...
+                'SelectionMode','single',...
+                'ListString',Model.Rnames);
+      selecttarget = listdlg('PromptString','Select target areas:',...
+                'SelectionMode','multiple',...
+                'ListString',Model.Rnames);
+         
+        Noisecell = cell(1:length(selecttarget)); % intiliaze noise correlation cell where all the correlation matrices go in
+        targetidx = cell(1:length(selecttarget));
+        for i = 1:length(targetidx)
+            targetidx{i} = find(brainmask==selecttarget(i));
+        end
+        seedidx = find(brainmask==selectseed);
+        
+        for j = selecttarget
+        for ridx = 1:length(ReactionOpt)
+          for sideidx = 1:length(SideOpt)
+              
+            tmp = zeesc{sideidx,ridx};
+            seedmat = brainmask(brainmask==seedidx);
+            
+            Corrcond{sideidx,ridx} = corr(tmp(tmp==repmat(brainmask==selectseed,[1,1,size(tmp,3)])),tmp(tmp==repmat(brainmask==selecttarget(j),[1,1,size(tmp,3)])));
+              
+              
       
       
       %% USER INPUT
