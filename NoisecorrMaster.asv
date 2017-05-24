@@ -137,25 +137,30 @@ brainmask = zeros(800,800);
         end
          for ridx = 1:length(ReactionOpt)
           for sideidx = 1:length(SideOpt)
-            if ~isempty(zeesc{sideidx,ridx})
-              seedtmp = zeesc{sideidx,ridx};
-              seedtmp(~repmat(seedim,[1,1,size(seedtmp,3)])) = nan;
-              seedtmp = reshape(seedtmp,[size(seedtmp,1)*size(seedtmp,2),size(seedtmp,3)]);
-              seedtmp=seedtmp(~isnan(seedtmp(:,2)),:);
-                  for targetidx = 1:length(targetim)
-                      targettmp = zeesc{sideidx,ridx};
-                      targettmp(~repmat(targetim{targetidx},[1,1,size(targettmp,3)])) = nan;
-                      targettmp = reshape(targettmp,[size(targettmp,1)*size(targettmp,2),size(targettmp,3)]);
-                      targettmp=targettmp(~isnan(targettmp(:,2)),:);
-                      corrcell{targetidx} = corr(targettmp',seedtmp');
-                  end
-                  CorrCond{sideidx,ridx} = corrcell;
-                 else 
-                  CorrCond{sideidx,ridx} = [];
-            end
-          end
-         end
-                          
+              
+              if ~isempty(zeesc{sideidx,ridx})
+                for targetidx = 1:length(targetim) %per condition per seed-targetarea noisecorrmatrix
+                     % repmat logical over 3d dimension
+                     % find corresponding indices? Or do for loop per trial -
+                     % so the trial structure is still there. 
+                  seedtmp = zeesc{sideidx,ridx};
+                  seedtmp(~repmat(seedim,[1,1,size(seedtmp,3)])) = nan;
+                  seedtmp = reshape(seedtmp,[size(seedtmp,1)*size(seedtmp,2),size(seedtmp,3)]);
+                  seedtmp=seedtmp(~isnan(seedtmp(:,2)),:);
+                  
+                    for targetidx = 1:length(targetim)
+                          targettmp = zeesc{sideidx,ridx};
+                          targettmp(~repmat(targetim{targetidx},[1,1,size(targettmp,3)])) = nan;
+                          targettmp = reshape(targettmp,[size(targettmp,1)*size(targettmp,2),size(targettmp,3)]);
+                          targettmp=targettmp(~isnan(targettmp(:,2)),:);
+                          corrcell{targetidx} = corr(targettmp',seedtmp');
+                    end
+                  CorrCond{sideidx,sidx} = corrcell;
+                end
+              else 
+                  CorrCond{ridx,sidx} = [];
+              end
+                 
             %% USER INPUT
 nback = 20;
 createvideosandfigurespermouse =1;
