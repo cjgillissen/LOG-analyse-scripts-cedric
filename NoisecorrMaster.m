@@ -82,10 +82,11 @@ brainmask = zeros(800,800);
       corrFCM1 = cell(length(SideOpt),length(ReactionOpt));
       cohereFCM1 = cell(length(SideOpt),length(ReactionOpt));
       Seedpixelcorr = cell(length(SideOpt),length(ReactionOpt));
+      zpixelcorr = cell(length(SideOpt),length(ReactionOpt));
 
 %% Noise Correlation per pixel
  
-% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline4_0_eqsample0\NoiseCorr');
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline4_1500_eqsample0\NoiseCorr');
 
 
      fig = imagesc(brainmask);
@@ -109,6 +110,42 @@ brainmask = zeros(800,800);
                     end
                 end
         end
+      end
+      
+      %% Z scored NC per seed pixel
+     imrange =  [-0.8,0.95];
+     fig = imagesc(brainmask);
+     seed = roipoly;
+     seedtemp = seed;
+      for ridx = 1:length(ReactionOpt)
+        for sideidx = 1:length(SideOpt)
+           if ~isempty(zeesc{sideidx,ridx})
+            tmp = zeesc{sideidx,ridx};
+            tmp(tmp>2|tmp<-2) = 2;
+            tmp2 = tmp;
+            seedtempmat = repmat(seedtemp,[1,1,size(tmp,3)]);
+            tmp2(~seedtempmat) = nan;
+            seedtempmat = nanmean(tmp2,1);
+            seedtempmat = squeeze(nanmean(seedtempmat,2));
+            corrvec = corr(seedtempmat,reshape(tmp,[size(tmp,1)*size(tmp,2),size(tmp,3)])');
+            zpixelcorr{sideidx,ridx} = reshape(corrvec,[size(tmp,1),size(tmp,2)]);
+           else; zpixelcorr{sideidx,ridx} = [];
+           end
+        end
+      end
+      
+      % plot results
+      for ridx = 1:length(ReactionOpt)
+          for sideidx = 1:length(SideOpt)
+              if ~isempty(zpixelcorr{sideidx,ridx})
+                  figure 
+                  imagesc(zpixelcorr{sideidx,ridx},imrange)
+                  str = sprintf('%s %s n = %1.0f',ReactionOpt{ridx},SideOpt{sideidx},nrt{sideidx,ridx});
+                  title(str);
+                  colorbar;
+                  
+              end
+          end
       end
       
       
@@ -363,7 +400,7 @@ for midx = 1:nrMouse %For this mouse
                         
                         continue
                     end
-                end
+                end 
                 
                 rawdatfiles = dir(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],[mouse num2str(expnr) '_RawData*']));
                 iddone(id) = 1;
@@ -481,7 +518,7 @@ for midx = 1:nrMouse %For this mouse
                 stdRT{sessioncount,id} = NoiseCorr.stdRT;
                 SideOpt{sessioncount,id} = NoiseCorr.SideOpt;
                 ReactionOpt{sessioncount,id} = NoiseCorr.ReactionOpt;
-                
+                zeesc{sessioncount,id} = NoiseCorr.zeesc;
                 clear NoiseCorr
                 load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(length(cvec)) '.mat'])).name));
                 clear conddata

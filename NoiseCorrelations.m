@@ -632,7 +632,7 @@ for midx = 1 %For this mouse
                             % Apply brainmask
                             tmp = tracesthiscond(:,:,:,i);
                             tmp(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
-                            tracesthiscond(:,:,:,i) = imgaussfilt(tmp,smoothfact); %Gaussian filter
+                            tracesthiscond(:,:,:,i) = smooth2a(tmp,smoothfact); %Gaussian filter
                             
                         end
                         
