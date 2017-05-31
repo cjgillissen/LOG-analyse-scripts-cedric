@@ -2,9 +2,9 @@
 % call Noisecorr function
 % load the Noisecorr files the fucntion made. 
 Scriptsdir = 'C:\Users\gillissen\Documents\GitHub\Mouse' %Direction of scripts
-storepath = 'C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage' %Main storage --> Will contain all processed data & model of the brain
+storepath = 'C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis' %Main storage --> Will contain all processed data & model of the brain
 DataDirectory = 'C:\Users\gillissen\Desktop\InternshipCédric\Datadirectproxy'%Raw images.
-miceopt = {'Frey'} %options for mice
+miceopt = {'Marsellus'} %options for mice
 Stim2Check = 'DelayedOriTuningSound'%Name of the stimulus as written in the LOG-file
 fijiLoc = 'C:\Users\gillissen\Desktop\InternshipCédric\Fiji.app\scripts' %FijiLocation
 tempstorage = 'C:\Users\gillissen\Desktop\InternshipCédric\tempstorage'%Temporary storage of 
@@ -12,6 +12,8 @@ baselinemethod = 4 %1: trial by trial baseline (no detrending necessary per se),
 takeequalsample = 0;
 smoothfact = 2;
 RedoAll = 0;
+trialtype = 1500;
+timelim = [0 500];
 %ACHTUNG: you need to install: https://sites.google.com/site/qingzongtseng/template-matching-ij-plugin#downloads
 
 addpath(genpath(Scriptsdir))
@@ -21,15 +23,27 @@ UserQuestions =0;
 %% Make info file
 % info = BuildInfo(miceopt,DataDirectory,storepath,Stim2Check); %Get all logs of WM-imaging sessions
 % save(fullfile(storepath,'sessionstruct'),'info')
-load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\sessionstruct')
+load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstruct')
 info.logs = info.logs(4,7,1); % session Frey20161121
 info.paths = info.paths(4,7,1);
 
+%% EvokedActivity ROI selection
+% Use timewindow of 80-120 to get clean figure representation in the brain
+% Make masks for each side of the brain, mask ~=V1 
+
+load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstruct')
+info.paths = info.paths(2,:,:);
+info.logs = info.logs(2,:,:);
+
+ROIselectionforFIG(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
+
+
 %% Noise Correlations
 
-trialtype = 1500;
-timelim = [0 500];
-NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,trialtype,timelim,smoothfact,takeequalsample,RedoAll)                   
+
+    
+    
+NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,'FG',timelim,smoothfact,takeequalsample,RedoAll)                   
  %% Load the NoiseCorr structs... 
  % Generalize code
  % If only interested in visual processing than concatenate the 1500 and 0
@@ -43,6 +57,58 @@ NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod
  
 load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\brainareamodel');
 brainmask = zeros(800,800);
+
+   %% Colormap
+      %Timelimit: Don't need data from time after this.
+%Make colormaps
+%Make colormaps
+posmap = fliplr([linspace(1,1,128);linspace(0,1,128);zeros(1,128)]);
+% blackmap = fliplr([linspace(0.2,0.40,12);linspace(0.2,0.40,12);linspace(0.2,0.40,12)]);
+negmap = fliplr([zeros(1,128);linspace(1,1,128);fliplr(linspace(0,1,128))]);
+PSCOREMAP = fliplr(cat(2,posmap,negmap))';
+blackval = round(0.95*size(PSCOREMAP,1)/2);
+blackrange = (size(PSCOREMAP,1)/2)-blackval:(size(PSCOREMAP,1)/2)+(blackval-1);
+blackmap = [fliplr(linspace(0,0.6,blackval)),linspace(0,0.6,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+PSCOREMAP(blackrange,:) = PSCOREMAP(blackrange,:).*repmat(blackmap,[3,1])';
+for i = 1:3
+    PSCOREMAP(:,i) = smooth(PSCOREMAP(:,i),5);
+end
+x = 1:256;
+y = 1:256;
+X = meshgrid(x,y);
+
+figure; imagesc(X)
+colormap(PSCOREMAP)
+
+ActSupColorMap = fliplr(cat(2,posmap,negmap))';
+
+
+%Mix in black in the middle
+blackval = 60;
+blackrange = (size(ActSupColorMap,1)/2)-blackval:(size(ActSupColorMap,1)/2)+(blackval-1);
+blackmap = [fliplr(linspace(0,1,blackval)),linspace(0,1,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+
+%Smooth
+ActSupColorMap(blackrange,:) = ActSupColorMap(blackrange,:).*repmat(blackmap,[3,1])';
+for i = 1:3
+    ActSupColorMap(:,i) = smooth(ActSupColorMap(:,i),5);
+end
+
+x = 1:256;
+y = 1:256;
+X = meshgrid(x,y);
+
+figure; imagesc(X)
+colormap(ActSupColorMap)
+
+% Make line map
+%Green for hit, red for erros, black for misses
+greenmap = [zeros(1,5);linspace(0.5,1,5);zeros(1,5)];
+redmap = [linspace(0.5,1,5);zeros(1,5);zeros(1,5)];
+blackmap = [linspace(0,0.5,5);linspace(0,0.5,5);linspace(0,0.5,5)];
+yellowmap = [linspace(0.5,1,5);linspace(0.5,1,5);zeros(1,5)];
+LineMap = cat(3,fliplr(redmap),fliplr(greenmap),fliplr(blackmap),fliplr(yellowmap));
+      
 
 %% Brainmask
             % create cell with the proper area logicals
@@ -112,6 +178,8 @@ load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey201611
         end
       end
       
+   
+      
       %% Z scored NC per seed pixel
      imrange =  [-0.8,0.95];
      fig = imagesc(brainmask);
@@ -139,7 +207,9 @@ load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey201611
           for sideidx = 1:length(SideOpt)
               if ~isempty(zpixelcorr{sideidx,ridx})
                   figure 
-                  imagesc(zpixelcorr{sideidx,ridx},imrange)
+                  h = imagesc(zpixelcorr{sideidx,ridx},imrange);
+                  colormap(ActSupColorMap)
+                  set(h,'AlphaData',brainmask~=0)
                   str = sprintf('%s %s n = %1.0f',ReactionOpt{ridx},SideOpt{sideidx},nrt{sideidx,ridx});
                   title(str);
                   colorbar;
