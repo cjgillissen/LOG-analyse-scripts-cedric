@@ -3,12 +3,12 @@
 % load the Noisecorr files the fucntion made. 
 Scriptsdir = 'C:\Users\gillissen\Documents\GitHub\Mouse' %Direction of scripts
 storepath = 'C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis' %Main storage --> Will contain all processed data & model of the brain
-DataDirectory = 'C:\Users\gillissen\Desktop\InternshipCédric\Datadirectproxy'%Raw images.
+DataDirectory = '\\VC2NIN\wbimaging'%Raw images.
 miceopt = {'Marsellus'} %options for mice
-Stim2Check = 'DelayedOriTuningSound'%Name of the stimulus as written in the LOG-file
+Stim2Check = 'FGTask'%Name of the stimulus as written in the LOG-file
 fijiLoc = 'C:\Users\gillissen\Desktop\InternshipCédric\Fiji.app\scripts' %FijiLocation
 tempstorage = 'C:\Users\gillissen\Desktop\InternshipCédric\tempstorage'%Temporary storage of 
-baselinemethod = 4 %1: trial by trial baseline (no detrending necessary per se), 2: filtered baseline (F0), no trial specific baseline (basically F), 3: average baseline (averaged over all trials per condition and then averaged over conditions, after detrending)
+baselinemethod = 1 %1: trial by trial baseline (no detrending necessary per se), 2: filtered baseline (F0), no trial specific baseline (basically F), 3: average baseline (averaged over all trials per condition and then averaged over conditions, after detrending)
 takeequalsample = 0;
 smoothfact = 2;
 RedoAll = 0;
@@ -36,6 +36,7 @@ info.paths = info.paths(2,:,:);
 info.logs = info.logs(2,:,:);
 
 ROIselectionforFIG(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
+DifferencesCheck(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
 
 
 %% Noise Correlations
