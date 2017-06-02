@@ -1376,7 +1376,7 @@ for midx = 1:nrMouse %For this mouse
             end
             saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'Timewindow ' num2str(tw(1)) '-' num2str(tw(2)) '_' trialtypes{fgid} '_AutomaticROImapLeftvsRight.bmp']))
             saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'Timewindow ' num2str(tw(1)) '-' num2str(tw(2)) '_' trialtypes{fgid} '_AutomaticROImapLeftvsRight.fig']))
-            
+            save(fullfile(StorePath,miceopt{midx},'Averages','ROIsLvsR'),'rois')
         end
     else
         %% Make ROIs (and/or add)
@@ -1869,10 +1869,11 @@ for midx = 1:nrMouse %For this mouse
                             roi.xi = boundartmps{ii}(:,2);
                             roi.yi = boundartmps{ii}(:,1);
                             rois{roicount} =roi;
+                            size(rois)
                             hold on
                             plot(rois{roicount}.xi,rois{roicount}.yi,'r-','LineWidth',1.5)
                             ht(i) = text(mean(roi.xi(:)), mean(roi.yi(:)),num2str(roicount),'color',[0 0 0]);
-                            
+                            save(fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'ContrROIs' num2str(roicount)]),'rois')
                             roicount = roicount+1;
                             
                         end
@@ -1880,12 +1881,15 @@ for midx = 1:nrMouse %For this mouse
                 end
             end
         end
+        roissave = rois;
         title([AllReactionOpt{ridx}])
     end
     
     saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'Timewindow ' num2str(tw(1)) '-' num2str(tw(2)) '_LeftvsRightFG.bmp']))
     saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'Timewindow ' num2str(tw(1)) '-' num2str(tw(2)) '_LeftvsRightFG.fig']))
     save(fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'ContrROIs']),'rois')
+    save(fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[mouse 'ContrROIs']),'roissave')
+
 end
 
 

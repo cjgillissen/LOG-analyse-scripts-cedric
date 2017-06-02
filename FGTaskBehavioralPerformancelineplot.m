@@ -1,6 +1,6 @@
 clear all
 close all
-cd('C:\Users\gillissen\Desktop\InternshipCédric\TrainingLogs\FGTask')
+cd('C:\Users\gillissen\Desktop\FGTask')
 
 %% Select Mouse
 TrainingList = dir(fullfile(cd,'*.mat'));
@@ -33,6 +33,9 @@ NormalPerf = NaN(length(Mice),length(Days));
 LongerPerf = NaN(length(Mice),length(Days));
 SmallerPerf = NaN(length(Mice),length(Days));
 ZeroCuePerf = NaN(length(Mice),length(Days));
+basetaksperf = NaN(length(Mice),length(Days));
+fullfgperf = NaN(length(Mice),length(Days));
+
 
 for Mouseidx = 1:length(Mice)
    for Dayidx = 1: length(Days)
@@ -41,6 +44,7 @@ for Mouseidx = 1:length(Mice)
         ResponseCell = {}; %Preallocate for ResponseCell concatenation
         GavePass = [];
         Side = {};
+        BGcon =[];
 %       Phase = {};
         Fileidx = find(~cellfun(@isempty,cellfun(@(X) strfind(X,[Mice{Mouseidx} '_' Days{Dayidx}]),{TrainingList.name},'UniformOutput',false)));
 %         currentdelay = [];
@@ -62,7 +66,7 @@ for Mouseidx = 1:length(Mice)
                          GavePass = [GavePass LOG.Gavepassive];
 %                          Phase = [Phase LOG.CurrentPhase];
 %                          currentdelay = [currentdelay LOG.currentdelay];
-                         
+                         BGcon = [BGcon LOG.BGContrast];
                 end % end of concatination for loop
             else %if not neeeded to concatinate just load the files
                 
@@ -73,6 +77,7 @@ for Mouseidx = 1:length(Mice)
 %                 RTright = LOG.RTrightVec;
                 Side = LOG.Side;
                 GavePass = [LOG.Gavepassive];
+                BGcon = LOG.BGContrast;
 %                 Phase = LOG.CurrentPhase;
 %                 currentdelay = LOG.currentdelay;
          
@@ -85,8 +90,8 @@ for Mouseidx = 1:length(Mice)
 %             end
                 
 NormalPerf(Mouseidx,Dayidx) = sum(strcmp(ResponseCell,'Hit')&~GavePass)/(sum(strcmp(ResponseCell,'Hit')&~GavePass)+sum(strcmp(ResponseCell,'Error')&~GavePass));
-                 
-                 
+basetaksperf(Mouseidx,Dayidx) = sum(strcmp(ResponseCell,'Hit')&~GavePass&BGcon==0)/(sum(strcmp(ResponseCell,'Hit')&~GavePass&BGcon==0)+sum(strcmp(ResponseCell,'Error')&~GavePass&BGcon==0));                 
+fullfgperf(Mouseidx,Dayidx) = sum(strcmp(ResponseCell,'Hit')&~GavePass&BGcon==1)/(sum(strcmp(ResponseCell,'Hit')&~GavePass&BGcon==1)+sum(strcmp(ResponseCell,'Error')&~GavePass&BGcon==1));              
         end
    end
 end
@@ -109,37 +114,23 @@ plot(1:size(NormalPerf,2),repmat(0.7,size(NormalPerf,2),1),'g')
 plot(30,NormalPerf(1,30),'r*')
 
    
-    
-    
+%% plot fullfg vs basetaks in combimode
+    colorfg = {'r','m'};
+    colorbt = {'b','c'};
+for mouseidx = 1:size(NormalPerf,1)
+    ylim([0 1])
+    plot(basetaksperf(mouseidx,:),colorfg{mouseidx},'DisplayName',sprintf(' basetask %s',Mice{mouseidx}))
+    hold on 
+    plot(fullfgperf(mouseidx,:),colorbt{mouseidx},'DisplayName',sprintf(' fullfg %s',Mice{mouseidx}));
+    xlabel('Days')
+    ylabel('Performance H/E+H')
+    legend('-DynamicLegend');
+end
 
+hold on
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+plot(1:size(NormalPerf,2),repmat(0.5,size(NormalPerf,2),1),'k')
+plot(1:size(NormalPerf,2),repmat(0.7,size(NormalPerf,2),1),'g')
 
 
 

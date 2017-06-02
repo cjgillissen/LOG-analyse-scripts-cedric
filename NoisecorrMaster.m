@@ -31,6 +31,11 @@ info.paths = info.paths(4,7,1);
 % Use timewindow of 80-120 to get clean figure representation in the brain
 % Make masks for each side of the brain, mask ~=V1 
 
+% f9ing the differencescheck script
+originallim =[-300 1500];
+trialtypes = {'FG','GREY'};
+StorePath = storepath;
+
 load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstruct')
 info.paths = info.paths(2,:,:);
 info.logs = info.logs(2,:,:);
