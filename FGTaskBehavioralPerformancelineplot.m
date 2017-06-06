@@ -35,13 +35,14 @@ SmallerPerf = NaN(length(Mice),length(Days));
 ZeroCuePerf = NaN(length(Mice),length(Days));
 basetaksperf = NaN(length(Mice),length(Days));
 fullfgperf = NaN(length(Mice),length(Days));
-
+BG
 
 for Mouseidx = 1:length(Mice)
    for Dayidx = 1: length(Days)
         
 %         RTleft=[];RTright=[]; %Pre allocate Licks
         ResponseCell = {}; %Preallocate for ResponseCell concatenation
+        CurrPerf = [];
         GavePass = [];
         Side = {};
         BGcon =[];
@@ -62,6 +63,7 @@ for Mouseidx = 1:length(Mice)
 %                          RTleft = [RTleft LOG.RTleftVec];
 %                          RTright = [RTright LOG.RTrightVec]; 
                          ResponseCell = [ResponseCell LOG.Reaction];
+                         CurrPerf = [CurrPerf LOG.CurrPerformance];
                          Side = [Side LOG.Side];
                          GavePass = [GavePass LOG.Gavepassive];
 %                          Phase = [Phase LOG.CurrentPhase];
@@ -77,6 +79,7 @@ for Mouseidx = 1:length(Mice)
 %                 RTright = LOG.RTrightVec;
                 Side = LOG.Side;
                 GavePass = [LOG.Gavepassive];
+                CurrPerf = LOG.CurrPerformance;
                 BGcon = LOG.BGContrast;
 %                 Phase = LOG.CurrentPhase;
 %                 currentdelay = LOG.currentdelay;

@@ -354,6 +354,8 @@ for midx = 1:nrMouse %For this mouse
     
     %Load Alan Brain model
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
+    FigPos(midx) = load(fullfile(StorePath,mosue,'FigPos.mat'));
+    
     
     for didx = 1:size(logs,2) %Loop over days
         if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
@@ -538,7 +540,7 @@ for midx = 1:nrMouse %For this mouse
                 [rtempl,ctempl] = find(~cell2mat(cellfun(@isempty,NoiseCorr.SumdFF,'UniformOutput',0)),1);
                 if ~isempty(r)
                     for idx = 1:length(r)
-                        NoiseCorr.SumdFF{r(idx),c(idx)} = zeros(size(NoiseCorr.SumdFF{rtempl,ctempl}));
+                        NoiseCorr.SumdFF{r(idx),c(idx)} = zeros(size(NoiseCorr.zeesc{rtempl,ctempl}));
                         NoiseCorr.nrtPerPix{r(idx),c(idx)} = zeros(size(NoiseCorr.nrtPerPix{rtempl,ctempl}));
                     end
                 end
@@ -554,32 +556,33 @@ for midx = 1:nrMouse %For this mouse
                 %wrong.
                 for rr = 1:size(NoiseCorr.dFFav,1)
                     for cc = 1:size(NoiseCorr.dFFav,2)
-                        NoiseCorr.SumdFF{rr,cc}(isnan(NoiseCorr.SumdFF{rr,cc})) = 0;
+                        NoiseCorr.zeesc{rr,cc}(isnan(NoiseCorr.zeesc{rr,cc})) = 0;
                     end
                 end
                 
-                if ~isempty(SumdFF{id})
-                    if size(NoiseCorr.SumdFF,2) < size(SumdFF{id},2)
+                if ~isempty(zeesc{id})
+                    if size(NoiseCorr.zeesc,2) < size(zeesc{id},2)
                         c = find(~ismember(unique([ReactionOpt{:}]),NoiseCorr.ReactionOpt));
                         for idx = 1:length(c)
-                            for rowidx = 1:size(SumdFF{id},1)
-                                NoiseCorr.SumdFF{rowidx,c(idx)} = zeros(size(SumdFF{id}{rowidx,c(idx)}));
+                            for rowidx = 1:size(zeesc{id},1)
+                                NoiseCorr.zeesc{rowidx,c(idx)} = zeros(size(zeesc{id}{rowidx,c(idx)}));
                                 NoiseCorr.nrt{rowidx,c(idx)} = 0;
-                                NoiseCorr.nrtPerPix{rowidx,c(idx)} = zeros(size(SumdFF{id}{rowidx,c(idx)}));
+                                NoiseCorr.nrtPerPix{rowidx,c(idx)} = zeros(size(zeesc{id}{rowidx,c(idx)}));
                             end
                         end
                     end
                     
                     
                     try
-                        SumdFF{id} = cellfun(@(X,Y) X+Y, NoiseCorr.SumdFF(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),SumdFF{id},'UniformOutput',0);
+                        zeesc{id} = cellfun(@(X,Y) X+Y, LEFTVSRIGHT.zeesc(:,~ismember(LEFTVSRIGHT.ReactionOpt,'TooEarly')),zeesc{id},'UniformOutput',0);
+                        zeesc{id} = cellfun(@(X,Y) X+Y, NoiseCorr.zeesc(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),zeesc{id},'UniformOutput',0);
                         nrtperpix{id} = cellfun(@(X,Y) X+Y, NoiseCorr.nrtPerPix(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),nrtperpix{id},'UniformOutput',0);
                     catch ME
                         disp(ME)
                         keyboard
                     end
                 else
-                    SumdFF{id} = NoiseCorr.SumdFF(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
+                    zeesc{id} = NoiseCorr.zeesc(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
                     nrtperpix{id} = NoiseCorr.nrtPerPix(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
                 end
                 
@@ -594,7 +597,6 @@ for midx = 1:nrMouse %For this mouse
                 stdRT{sessioncount,id} = NoiseCorr.stdRT;
                 SideOpt{sessioncount,id} = NoiseCorr.SideOpt;
                 ReactionOpt{sessioncount,id} = NoiseCorr.ReactionOpt;
-                zeesc{sessioncount,id} = NoiseCorr.zeesc;
                 clear NoiseCorr
                 load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(length(cvec)) '.mat'])).name));
                 clear conddata
@@ -604,8 +606,76 @@ for midx = 1:nrMouse %For this mouse
         end
     end
     
-    %% Differences
+     %% Define conditions
+    maxnrReactOpt = max(max(cellfun(@length,ReactionOpt)));
+    AllReactionOpt = unique([ReactionOpt{:}],'stable');
+    maxnrReactOpt =maxnrReactOpt- sum(strcmp(AllReactionOpt,'TooEarly'));
+    AllReactionOpt(strcmp(AllReactionOpt,'TooEarly')) = [];
+    if removeErrors
+        AllReactionOpt(strcmp(AllReactionOpt,'Error')) = [];
+    end
+    if removeHits
+        AllReactionOpt(strcmp(AllReactionOpt,'Hit')) = [];
+    end
+    if removeMiss
+        AllReactionOpt(strcmp(AllReactionOpt,'Miss')) = [];
+    end
+
+    maxnrSideOpt = max(max(cellfun(@length,SideOpt)));
+    AllSideOpt = unique([SideOpt{:}],'stable');
+    fgopt = find(iddone);
+    [xpix ypix ~] = size(zeesc{fgopt(1)}{1,1});
+    
+    %Check timevecs: if not the same; warning!
+    timevec = cat(1,timevectmp{:});
+    timevec = unique(timevec,'rows');
+    if size(timevec,1) > 1
+        error('Multiple versions of timevec...')
+    end
+    
+    if ~exist(fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)]))
+        mkdir(fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)]))
+    end
+    
+    
+    
+    %% Z scored NC per seed pixel
+    
+     seed = FigPos(midx);
+      for ridx = 1:length(ReactionOpt)
+        for sideidx = 1:length(SideOpt)
+           if ~isempty(zeesc{sideidx,ridx})
+            tmp = zeesc{sideidx,ridx};
+            tmp(tmp>2|tmp<-2) = 2;
+            tmp2 = tmp;
+            seedtempmat = repmat(seedtemp,[1,1,size(tmp,3)]);
+            tmp2(~seedtempmat) = nan;
+            seedtempmat = nanmean(tmp2,1);
+            seedtempmat = squeeze(nanmean(seedtempmat,2));
+            corrvec = corr(seedtempmat,reshape(tmp,[size(tmp,1)*size(tmp,2),size(tmp,3)])');
+            zpixelcorr{sideidx,ridx} = reshape(corrvec,[size(tmp,1),size(tmp,2)]);
+           else; zpixelcorr{sideidx,ridx} = [];
+           end
+        end
+      end
       
+      % plot results
+      for ridx = 1:length(ReactionOpt)
+          for sideidx = 1:length(SideOpt)
+              if ~isempty(zpixelcorr{sideidx,ridx})
+                  figure 
+                  h = imagesc(zpixelcorr{sideidx,ridx},imrange);
+                  colormap(ActSupColorMap)
+                  set(h,'AlphaData',brainmask~=0)
+                  str = sprintf('%s %s n = %1.0f',ReactionOpt{ridx},SideOpt{sideidx},nrt{sideidx,ridx});
+                  title(str);
+                  colorbar;
+                  
+              end
+          end
+      end
+      
+end
       
       
       
