@@ -43,8 +43,233 @@ info.logs = info.logs(2,:,:);
 ROIselectionforFIG(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
 DifferencesCheck(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
 
+
+%% Noise Correlations
+
+
+    
+    
+NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,'FG',timelim,smoothfact,takeequalsample,RedoAll)                   
+ %% Load the NoiseCorr structs... 
+ % Generalize code
+ % If only interested in visual processing than concatenate the 1500 and 0
+ % trialtypes
+ 
+
+% load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Frey1_RawData_C1','timeline');
+% timelim = [-300 2500];
+% timevec = timeline(timeline>=timelim(1)&timeline<=timelim(2));
+%in real version here the task epochs are also defined. 0-500 visual. 500-1450 delay. 1500- onwards response period. 
+ 
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\brainareamodel');
+brainmask = zeros(800,800);
+
+   %% Colormap
+      %Timelimit: Don't need data from time after this.
+%Make colormaps
+%Make colormaps
+posmap = fliplr([linspace(1,1,128);linspace(0,1,128);zeros(1,128)]);
+% blackmap = fliplr([linspace(0.2,0.40,12);linspace(0.2,0.40,12);linspace(0.2,0.40,12)]);
+negmap = fliplr([zeros(1,128);linspace(1,1,128);fliplr(linspace(0,1,128))]);
+PSCOREMAP = fliplr(cat(2,posmap,negmap))';
+blackval = round(0.95*size(PSCOREMAP,1)/2);
+blackrange = (size(PSCOREMAP,1)/2)-blackval:(size(PSCOREMAP,1)/2)+(blackval-1);
+blackmap = [fliplr(linspace(0,0.6,blackval)),linspace(0,0.6,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+PSCOREMAP(blackrange,:) = PSCOREMAP(blackrange,:).*repmat(blackmap,[3,1])';
+for i = 1:3
+    PSCOREMAP(:,i) = smooth(PSCOREMAP(:,i),5);
+end
+x = 1:256;
+y = 1:256;
+X = meshgrid(x,y);
+
+figure; imagesc(X)
+colormap(PSCOREMAP)
+
+ActSupColorMap = fliplr(cat(2,posmap,negmap))';
+
+
+%Mix in black in the middle
+blackval = 60;
+blackrange = (size(ActSupColorMap,1)/2)-blackval:(size(ActSupColorMap,1)/2)+(blackval-1);
+blackmap = [fliplr(linspace(0,1,blackval)),linspace(0,1,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+
+%Smooth
+ActSupColorMap(blackrange,:) = ActSupColorMap(blackrange,:).*repmat(blackmap,[3,1])';
+for i = 1:3
+    ActSupColorMap(:,i) = smooth(ActSupColorMap(:,i),5);
+end
+
+x = 1:256;
+y = 1:256;
+X = meshgrid(x,y);
+
+figure; imagesc(X)
+colormap(ActSupColorMap)
+
+% Make line map
+%Green for hit, red for erros, black for misses
+greenmap = [zeros(1,5);linspace(0.5,1,5);zeros(1,5)];
+redmap = [linspace(0.5,1,5);zeros(1,5);zeros(1,5)];
+blackmap = [linspace(0,0.5,5);linspace(0,0.5,5);linspace(0,0.5,5)];
+yellowmap = [linspace(0.5,1,5);linspace(0.5,1,5);zeros(1,5)];
+LineMap = cat(3,fliplr(redmap),fliplr(greenmap),fliplr(blackmap),fliplr(yellowmap));
       
-%% USER INPUT
+
+%% Brainmask
+            % create cell with the proper area logicals
+            areas = Model.Regions;
+            brainmask = zeros(800,800);
+            for i = 1:length(Model.Regions)
+                Borders = Model.Boundaries{i};
+                for j = 1:length(Borders)
+                    tmp = poly2mask(Borders{j}(:,1),Borders{j}(:,2),800,800);
+                    tmp = imfill(tmp,'holes');
+                    brainmask(tmp) = 0+i;
+                end
+            end
+            brainmask = imfill(brainmask,'holes');
+            
+            %% Load variables
+            
+                dFFav = NoiseCorr.dFFav;
+                nrt = NoiseCorr.nrt;
+                meanRT = NoiseCorr.meanRT;
+                stdRT = NoiseCorr.stdRT;
+                SideOpt = NoiseCorr.SideOpt;
+                ReactionOpt = NoiseCorr.ReactionOpt;
+                Visualavg = NoiseCorr.Trialavg;
+                zeesc = NoiseCorr.zeesc;
+                
+                ConditionNames =  NoiseCorr.ConditionNames;
+                
+                conditionparts = cellfun(@(X) strsplit(X,' '),ConditionNames,'UniformOutput',0);
+                reaction = cellfun(@(X) X{1},conditionparts,'UniformOutput',0); %Reaction
+                orientation = cellfun(@(X) X{2},conditionparts,'UniformOutput',0); %orientations
+                side = cellfun(@(X) X{4},conditionparts,'UniformOutput',0); %SIdes
+                
+                clear NoiseCorr
+  
+      ConAreaAv = cell(length(SideOpt),length(ReactionOpt));
+      corrFCM1 = cell(length(SideOpt),length(ReactionOpt));
+      cohereFCM1 = cell(length(SideOpt),length(ReactionOpt));
+      Seedpixelcorr = cell(length(SideOpt),length(ReactionOpt));
+      zpixelcorr = cell(length(SideOpt),length(ReactionOpt));
+
+%% Noise Correlation per pixel
+ 
+load('C:\Users\gillissen\Desktop\InternshipCédric\MainAnaStorage\Frey\Frey20161121\Frey1\Baseline4_1500_eqsample0\NoiseCorr');
+
+
+     fig = imagesc(brainmask);
+     seed = roipoly;
+     seedtemp = seed;
+     
+      for ridx = 1:length(ReactionOpt)
+        for sideidx = 1:length(SideOpt)
+            tmp = Visualavg{sideidx,ridx};
+            tmp2 = tmp;
+            seedtemp = repmat(seedtemp,[1,1,size(tmp,3)]);
+            tmp2(~seedtemp) = nan;
+            seedtemp = nanmean(tmp2,1);
+            seedtemp = squeeze(nanmean(seedtemp,2));
+            
+            FC = nan(size(tmp)); % initiliaze vector with correlation measures     
+                for pixelx = 1:size(tmp,1)
+                    for pixely = 1:size(tmp,2) 
+                     
+                    Seedpixelcorr{sideidx,ridx}(pixely,pixelx) = corr(seedtemp,squeeze(tmp(pixelx,pixely,:)));
+                    end
+                end
+        end
+      end
+      
+   
+      
+      %% Z scored NC per seed pixel
+     imrange =  [-0.8,0.95];
+     fig = imagesc(brainmask);
+     seed = roipoly;
+     seedtemp = seed;
+      for ridx = 1:length(ReactionOpt)
+        for sideidx = 1:length(SideOpt)
+           if ~isempty(zeesc{sideidx,ridx})
+            tmp = zeesc{sideidx,ridx};
+            tmp(tmp>2|tmp<-2) = 2;
+            tmp2 = tmp;
+            seedtempmat = repmat(seedtemp,[1,1,size(tmp,3)]);
+            tmp2(~seedtempmat) = nan;
+            seedtempmat = nanmean(tmp2,1);
+            seedtempmat = squeeze(nanmean(seedtempmat,2));
+            corrvec = corr(seedtempmat,reshape(tmp,[size(tmp,1)*size(tmp,2),size(tmp,3)])');
+            zpixelcorr{sideidx,ridx} = reshape(corrvec,[size(tmp,1),size(tmp,2)]);
+           else; zpixelcorr{sideidx,ridx} = [];
+           end
+        end
+      end
+      
+      % plot results
+      for ridx = 1:length(ReactionOpt)
+          for sideidx = 1:length(SideOpt)
+              if ~isempty(zpixelcorr{sideidx,ridx})
+                  figure 
+                  h = imagesc(zpixelcorr{sideidx,ridx},imrange);
+                  colormap(ActSupColorMap)
+                  set(h,'AlphaData',brainmask~=0)
+                  str = sprintf('%s %s n = %1.0f',ReactionOpt{ridx},SideOpt{sideidx},nrt{sideidx,ridx});
+                  title(str);
+                  colorbar;
+                  
+              end
+          end
+      end
+      
+      
+      
+      
+      %% Pairwise Noise correlations between pixels of different areas
+      % For every pair of pixels correlate noise correlations per condition
+      % Per area otherwise too many pairs??
+     
+      CorrCond = cell(length(SideOpt),length(ReactionOpt));
+      
+      
+      selectseed = listdlg('PromptString','Select one seed area:',...
+                'SelectionMode','single',...
+                'ListString',Model.Rnames);
+      selecttarget = listdlg('PromptString','Select target areas:',...
+                'SelectionMode','multiple',...
+                'ListString',Model.Rnames);
+        
+         
+        corrcell = cell(1:length(selecttarget)); % intiliaze noise correlation cell where all the correlation matrices go in
+        targetim = cell(1:length(selecttarget));
+        seedim = brainmask==selectseed;
+        for i = 1:length(targetim)
+            targetim{i} = brainmask==selecttarget(i);
+        end
+         for ridx = 1:length(ReactionOpt)
+          for sideidx = 1:length(SideOpt)
+            if ~isempty(zeesc{sideidx,ridx})
+              seedtmp = zeesc{sideidx,ridx};
+              seedtmp(~repmat(seedim,[1,1,size(seedtmp,3)])) = nan;
+              seedtmp = reshape(seedtmp,[size(seedtmp,1)*size(seedtmp,2),size(seedtmp,3)]);
+              seedtmp=seedtmp(~isnan(seedtmp(:,2)),:);
+                  for targetidx = 1:length(targetim)
+                      targettmp = zeesc{sideidx,ridx};
+                      targettmp(~repmat(targetim{targetidx},[1,1,size(targettmp,3)])) = nan;
+                      targettmp = reshape(targettmp,[size(targettmp,1)*size(targettmp,2),size(targettmp,3)]);
+                      targettmp=targettmp(~isnan(targettmp(:,2)),:);
+                      corrcell{targetidx} = corr(targettmp',seedtmp');
+                  end
+                  CorrCond{sideidx,ridx} = corrcell;
+                 else 
+                  CorrCond{sideidx,ridx} = [];
+            end
+          end
+         end
+                          
+            %% USER INPUT
 nback = 20;
 createvideosandfigurespermouse =1;
 latencyana = 0;
@@ -55,7 +280,9 @@ removeHits = 0 %if you don't want to include hits, make it 1
 removeMiss = 0 %If you don't want to include misses, make it 1
 fgtw = [120 250]; %FOR FG     
 
+
 %% STOP USER INPUT
+
 %Timelimit: Don't need data from time after this.
 %Make colormaps
 %Make colormaps
@@ -73,23 +300,31 @@ end
 x = 1:256;
 y = 1:256;
 X = meshgrid(x,y);
+
 figure; imagesc(X)
 colormap(PSCOREMAP)
+
 ActSupColorMap = fliplr(cat(2,posmap,negmap))';
+
+
 %Mix in black in the middle
 blackval = 60;
 blackrange = (size(ActSupColorMap,1)/2)-blackval:(size(ActSupColorMap,1)/2)+(blackval-1);
 blackmap = [fliplr(linspace(0,1,blackval)),linspace(0,1,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+
 %Smooth
 ActSupColorMap(blackrange,:) = ActSupColorMap(blackrange,:).*repmat(blackmap,[3,1])';
 for i = 1:3
     ActSupColorMap(:,i) = smooth(ActSupColorMap(:,i),5);
 end
+
 x = 1:256;
 y = 1:256;
 X = meshgrid(x,y);
+
 figure; imagesc(X)
 colormap(ActSupColorMap)
+
 % Make line map
 %Green for hit, red for erros, black for misses
 greenmap = [zeros(1,5);linspace(0.5,1,5);zeros(1,5)];
@@ -97,8 +332,8 @@ redmap = [linspace(0.5,1,5);zeros(1,5);zeros(1,5)];
 blackmap = [linspace(0,0.5,5);linspace(0,0.5,5);linspace(0,0.5,5)];
 yellowmap = [linspace(0.5,1,5);linspace(0.5,1,5);zeros(1,5)];
 LineMap = cat(3,fliplr(redmap),fliplr(greenmap),fliplr(blackmap),fliplr(yellowmap));
-micechosen = zeros(1,length(miceopt));
 
+micechosen = zeros(1,length(miceopt));
 %% Gather all data
 mousecount = 0;
 for midx = 1:nrMouse %For this mouse
@@ -107,9 +342,9 @@ for midx = 1:nrMouse %For this mouse
     end
     
     SUMSQALL = cell(1,length(trialtypes));
-    zeesc = SUMSQALL;
-    nrt = zeesc;
-    nrtperpix = zeesc;
+    SumdFF = SUMSQALL;
+    nrt = SumdFF;
+    nrtperpix = SumdFF;
     
     newroiscount = 1;
     mouse = miceopt{midx};
@@ -121,7 +356,8 @@ for midx = 1:nrMouse %For this mouse
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
     FigPos(midx) = load(fullfile(StorePath,mosue,'FigPos.mat'));
     
-      for didx = 1:size(logs,2) %Loop over days
+    
+    for didx = 1:size(logs,2) %Loop over days
         if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
             continue
         end
@@ -228,6 +464,7 @@ for midx = 1:nrMouse %For this mouse
                     continue
                 end
                 
+                
                 disp('Loading data...')
                 load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) ,'_' trialtypes{id}, '_eqsample' num2str(takeequalsample)],'NoiseCorr.mat'))
                 if ~exist('NoiseCorr','var')
@@ -245,7 +482,9 @@ for midx = 1:nrMouse %For this mouse
                 
                 rawdatfiles = dir(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],[mouse num2str(expnr) '_RawData*']));
                 iddone(id) = 1;
-              
+                
+                
+                
                 %replace empty matrices with zeros
                 [r,c] = find(cell2mat(cellfun(@isempty,NoiseCorr.zeesc,'UniformOutput',0)));
                 [rtempl,ctempl] = find(~cell2mat(cellfun(@isempty,NoiseCorr.zeesc,'UniformOutput',0)),1);
@@ -295,7 +534,9 @@ for midx = 1:nrMouse %For this mouse
                     zeesc{id} = NoiseCorr.zeesc(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
                     nrtperpix{id} = NoiseCorr.nrtPerPix(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
                 end
-            
+                
+                
+                
                 if ~isempty(nrt{id})
                     nrt{id} = cellfun(@(X,Y) X+Y,nrt{id},NoiseCorr.nrt(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),'UniformOutput',0);
                 else
@@ -361,24 +602,18 @@ for midx = 1:nrMouse %For this mouse
             seedtempmat = nanmean(tmp2,1);
             seedtempmat = squeeze(nanmean(seedtempmat,2));
             corrvec = corr(seedtempmat,reshape(tmp,[size(tmp,1)*size(tmp,2),size(tmp,3)])');
-            zseedpixelcorr{sideidx,ridx} = reshape(corrvec,[size(tmp,1),size(tmp,2)]);
-           else; zseedpixelcorr{sideidx,ridx} = [];
+            zpixelcorr{sideidx,ridx} = reshape(corrvec,[size(tmp,1),size(tmp,2)]);
+           else; zpixelcorr{sideidx,ridx} = [];
            end
         end
       end
       
-end
- 
-
-%% Plot Results
-
-
       % plot results
       for ridx = 1:length(ReactionOpt)
           for sideidx = 1:length(SideOpt)
-              if ~isempty(zseedpixelcorr{sideidx,ridx})
+              if ~isempty(zpixelcorr{sideidx,ridx})
                   figure 
-                  h = imagesc(zseedpixelcorr{sideidx,ridx},imrange);
+                  h = imagesc(zpixelcorr{sideidx,ridx},imrange);
                   colormap(ActSupColorMap)
                   set(h,'AlphaData',brainmask~=0)
                   str = sprintf('%s %s n = %1.0f',ReactionOpt{ridx},SideOpt{sideidx},nrt{sideidx,ridx});
@@ -388,6 +623,10 @@ end
               end
           end
       end
+      
+end
+      
+      
       
       
       
