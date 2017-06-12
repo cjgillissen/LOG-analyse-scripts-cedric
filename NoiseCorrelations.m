@@ -26,7 +26,7 @@ for midx = 1 %For this mouse
     if sum(~cellfun(@isempty, {logs{midx,:,:}})) < 1 %If not recorded that day, skip
         continue
     end
-    mouse = 'Frey';
+    mouse = 'Marsellus';
     referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
     for didx = 1:size(logs,2) %Loop over days
         if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
@@ -632,7 +632,7 @@ for midx = 1 %For this mouse
                             % Apply brainmask
                             tmp = tracesthiscond(:,:,:,i);
                             tmp(~repmat(brainmask,[1,1,size(tmp,3)]))= nan;
-                            tracesthiscond(:,:,:,i) = smooth2a(tmp,smoothfact); %Gaussian filter
+                            tracesthiscond(:,:,:,i) = imgaussfilt(tmp,smoothfact); %Gaussian filter
                             
                         end
                         
@@ -693,7 +693,8 @@ for midx = 1 %For this mouse
                 NoiseCorr.SideOpt = SideOpt;
                 NoiseCorr.ConditionNames = ConditionNames;
                 NoiseCorr.zeesc = zeesc;
-                
+                NoiseCorr.nrtPerPix = nrtPerPix;
+
                 save(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE ,'_eqsample' num2str(takeequalsample)],'NoiseCorr'),'NoiseCorr','-v7.3')
                 
             end

@@ -12,8 +12,8 @@ baselinemethod = 1 %1: trial by trial baseline (no detrending necessary per se),
 takeequalsample = 0;
 smoothfact = 2;
 RedoAll = 0;
-trialtype = 1500;
-timelim = [0 500];
+trialtype = 'FG';
+timelim = [50 200];
 %ACHTUNG: you need to install: https://sites.google.com/site/qingzongtseng/template-matching-ij-plugin#downloads
 
 addpath(genpath(Scriptsdir))
@@ -22,35 +22,32 @@ UserQuestions =0;
   
 %% Make info file
 % info = BuildInfo(miceopt,DataDirectory,storepath,Stim2Check); %Get all logs of WM-imaging sessions
-% save(fullfile(storepath,'sessionstruct'),'info')
-load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstruct')
-info.logs = info.logs(4,7,1); % session Frey20161121
-info.paths = info.paths(4,7,1);
+% % save(fullfile(storepath,'sessionstruct'),'info')
+load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstructmarsellus')
+logs = info.logs(2);
+paths = info.paths(2);
+% logs = info.logs;
+% paths = info.paths;
 
 %% EvokedActivity ROI selection
 % Use timewindow of 80-120 to get clean figure representation in the brain
-% Make masks for each side of the brain, mask ~=V1 
+% 
+% ROIselectionforFIG(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
+% DifferencesCheck(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
 
-% f9ing the differencescheck script
-originallim =[-300 1500];
-trialtypes = {'FG','GREY'};
-StorePath = storepath;
-
-load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstruct')
-info.paths = info.paths(2,:,:);
-info.logs = info.logs(2,:,:);
-
-ROIselectionforFIG(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
-DifferencesCheck(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'FG','GREY'},[-300 500],takeequalsample); %Last one: plotlim
-
-      
+       
 %% USER INPUT
+
+trialtypes = {'FG'};
+StorePath = storepath;
+originallim = [50 250];
+
 nback = 20;
 createvideosandfigurespermouse =1;
 latencyana = 0;
 contrastROIs = 1; %Contrast between conditions to determine ROI?
 EvokedActivityROI = 1;
-removeE rrors = 0 %If you don't want to include Errors, make it 1
+removeErrors = 0 %If you don't want to include Errors, make it 1
 removeHits = 0 %if you don't want to include hits, make it 1
 removeMiss = 0 %If you don't want to include misses, make it 1
 fgtw = [120 250]; %FOR FG     
@@ -100,6 +97,7 @@ LineMap = cat(3,fliplr(redmap),fliplr(greenmap),fliplr(blackmap),fliplr(yellowma
 micechosen = zeros(1,length(miceopt));
 
 %% Gather all data
+nrMouse = 1:length(miceopt);
 mousecount = 0;
 for midx = 1:nrMouse %For this mouse
     if sum(~cellfun(@isempty, {logs{midx,:,:}})) < 1 %If not recorded that day, skip
@@ -119,7 +117,7 @@ for midx = 1:nrMouse %For this mouse
     
     %Load Alan Brain model
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
-    FigPos(midx) = load(fullfile(StorePath,mosue,'FigPos.mat'));
+    FigPos(midx) = load(fullfile(StorePath,mouse,'figpos.mat'));
     
       for didx = 1:size(logs,2) %Loop over days
         if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
@@ -345,7 +343,8 @@ for midx = 1:nrMouse %For this mouse
         mkdir(fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)]))
     end
     
-    
+end
+
     
     %% Z scored NC per seed pixel
     
@@ -367,7 +366,7 @@ for midx = 1:nrMouse %For this mouse
         end
       end
       
-end
+
  
 
 %% Plot Results
