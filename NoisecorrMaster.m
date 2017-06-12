@@ -24,11 +24,14 @@ UserQuestions =0;
 % info = BuildInfo(miceopt,DataDirectory,storepath,Stim2Check); %Get all logs of WM-imaging sessions
 % % save(fullfile(storepath,'sessionstruct'),'info')
 load('C:\Users\gillissen\Desktop\InternshipCédric\FGmainanylsis\sessionstructmarsellus')
-logs = info.logs(2);
-paths = info.paths(2);
+logs = info.logs(2:3);
+paths = info.paths(2:3);
 % logs = info.logs;
 % paths = info.paths;
+info.logs = info.logs(2:3);
+info.paths = info.paths(2:3);
 
+% NoiseCorrelations(info,miceopt,storepath,DataDirectory,Stim2Check,1,trialtype,timelim,2,0,0);
 %% EvokedActivity ROI selection
 % Use timewindow of 80-120 to get clean figure representation in the brain
 % 
@@ -40,7 +43,7 @@ paths = info.paths(2);
 
 trialtypes = {'FG'};
 StorePath = storepath;
-originallim = [50 250];
+originallim = [50 200];
 
 nback = 20;
 createvideosandfigurespermouse =1;
@@ -243,59 +246,19 @@ for midx = 1:nrMouse %For this mouse
                 
                 rawdatfiles = dir(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],[mouse num2str(expnr) '_RawData*']));
                 iddone(id) = 1;
-              
-                %replace empty matrices with zeros
-                [r,c] = find(cell2mat(cellfun(@isempty,NoiseCorr.zeesc,'UniformOutput',0)));
-                [rtempl,ctempl] = find(~cell2mat(cellfun(@isempty,NoiseCorr.zeesc,'UniformOutput',0)),1);
-                if ~isempty(r)
-                    for idx = 1:length(r)
-                        NoiseCorr.zeesc{r(idx),c(idx)} = zeros(size(NoiseCorr.zeesc{rtempl,ctempl}));
-                        NoiseCorr.nrtPerPix{r(idx),c(idx)} = zeros(size(NoiseCorr.nrtPerPix{rtempl,ctempl}));
-                    end
-                end
-                
-                %replace empty with 0
-                [r,c] = find(cellfun(@isempty,NoiseCorr.nrt));
-                if ~isempty(r)
-                    for idx = 1:length(r)
-                        NoiseCorr.nrt{r(idx),c(idx)}=0;
-                    end
-                end
-                %Make 0 of nans, cause summation with nans is going
-                %wrong.
-                for rr = 1:size(NoiseCorr.dFFav,1)
-                    for cc = 1:size(NoiseCorr.dFFav,2)
-                        NoiseCorr.zeesc{rr,cc}(isnan(NoiseCorr.zeesc{rr,cc})) = 0;
-                    end
-                end
-                
-                if ~isempty(zeesc{id})
-                    if size(NoiseCorr.zeesc,2) < size(zeesc{id},2)
-                        c = find(~ismember(unique([ReactionOpt{:}]),NoiseCorr.ReactionOpt));
-                        for idx = 1:length(c)
-                            for rowidx = 1:size(zeesc{id},1)
-                                NoiseCorr.zeesc{rowidx,c(idx)} = zeros(size(zeesc{id}{rowidx,c(idx)}));
-                                NoiseCorr.nrt{rowidx,c(idx)} = 0;
-                                NoiseCorr.nrtPerPix{rowidx,c(idx)} = zeros(size(zeesc{id}{rowidx,c(idx)}));
-                            end
-                        end
-                    end
-                    
-                    
+                                  
                     try
-                        zeesc{id} = cellfun(@(X,Y) X+Y, NoiseCorr.zeesc(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),zeesc{id},'UniformOutput',0);
-                        nrtperpix{id} = cellfun(@(X,Y) X+Y, NoiseCorr.nrtPerPix(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),nrtperpix{id},'UniformOutput',0);
+                        zeesc{id} = cellfun(@(X,Y) X+Y, NoiseCorr.zeesc,zeesc(id),'UniformOutput',0);
+                        nrtperpix{id} = cellfun(@(X,Y) X+Y, NoiseCorr.nrtPerPix,nrtperpix{id},'UniformOutput',0);
                     catch ME
                         disp(ME)
                         keyboard
                     end
-                else
-                    zeesc{id} = NoiseCorr.zeesc(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
-                    nrtperpix{id} = NoiseCorr.nrtPerPix(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
-                end
+                
+                   
             
                 if ~isempty(nrt{id})
-                    nrt{id} = cellfun(@(X,Y) X+Y,nrt{id},NoiseCorr.nrt(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly')),'UniformOutput',0);
+                    nrt{id} = cellfun(@(X,Y) X+Y,nrt{id},NoiseCorr.nrt,'UniformOutput',0);
                 else
                     nrt{id} = NoiseCorr.nrt(:,~ismember(NoiseCorr.ReactionOpt,'TooEarly'));
                 end
