@@ -10,7 +10,7 @@ load('\\VC2NIN\wbimaging\MainAnalysis\Marsellus\brainareamodel.mat')
 load('\\\\VC2NIN\wbimaging\pRF Results\Marsellus\4Mapping\pRFmaps')
 fgx = 40
 fgy = 7;
-fgsz = 50;
+fgsz = 35;
 r = [0:1:359];
 area = 9; %9 for AREA based on prf and 11 for V1 in brainareamodel
 z = 0;
@@ -39,7 +39,7 @@ for area = [9 23]
 %     [a,e] = meshgrid(azirange,elerange);
 
     %Where was figure?
-    fgx = 40.*side;
+    fgx = fgsz.*side;
     x = fgx+cosd(r).*(fgsz/2);
     y = fgy+sind(r).*(fgsz/2);
 
