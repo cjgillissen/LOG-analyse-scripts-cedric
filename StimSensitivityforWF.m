@@ -322,7 +322,7 @@ for midx = 1:nrMouse %For this mouse
                     L1 = size(tmpleft(pixidx),2);
                     L2 = size(tmpright(pixidx),2);
                     labels = [ones(L1,1);zeros(L2,1)];
-                    scores = [tmperror(pixidx,:);tmperror(pixidx,:)];
+                    scores = [tmpleft(pixidx,:);tmpright(pixidx,:)];
                     [~,~,~,AUC1] = perfcurve(labels,scores,1);
                     tmpcp(pixidx) = AUC1;
                    end
