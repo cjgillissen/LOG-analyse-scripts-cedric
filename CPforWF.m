@@ -308,16 +308,16 @@ for midx = 1:nrMouse %For this mouse
                     removenanpix = find(squeeze(sum(isnan(tmperror),1)>0) | squeeze(sum(isnan(tmphit),1)>0) | removepixvec' == 1);
                     tmperror(:,removenanpix) = [];
                     tmphit(:,removenanpix) = [];
-                    tmpcp = zeros(size(tmphit));
+                    tmpcp = zeros(size(tmperror,2),1);
                  
                     %% compute CP for whole brain
                     % how to get back to brainpixelssss???
-                   for pixidx = 1:size(tmperror,1)
+                   for pixidx = 1:size(tmperror,2)
                        
-                    L1 = size(tmperror(pixidx),2);
-                    L2 = size(tmphit(pixidx),2);
+                    L1 = size(tmperror(:,pixidx),1);
+                    L2 = size(tmphit(:,pixidx),1);
                     labels = [ones(L1,1);zeros(L2,1)];
-                    scores = [tmperror(pixidx,:);tmperror(pixidx,:)];
+                    scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
                     [~,~,~,AUC1] = perfcurve(labels,scores,1);
                     tmpcp(pixidx) = AUC1;
                    end
@@ -327,16 +327,16 @@ for midx = 1:nrMouse %For this mouse
                    aucform = true(xpix*ypix,1);
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
-                   newauc(aucform) = smooth2a(mean((tmpcp),2),2);% abs
+                   newauc(aucform) = smooth2a(tmpcp,2,2);
                    h =imagesc(reshape(newauc,xpix,ypix));
                    hold on
                    scatter(BrainModel{midx}.Model.AllX,BrainModel{midx}.Model.AllY,'k.')
                    axis square
                    colorbar
-                   set(h,'AlphaData',~isnan(reshape(newbeta,xpix,ypix)));
+                   set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
                    title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel = '])
                     
-                    PERF{midx,sessioncount,ridx,id,twid}.CP = newauc;
+                    PErf{midx,sessioncount,ridx,id,twid}.CP = newauc;
                     disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
                    
                 end
