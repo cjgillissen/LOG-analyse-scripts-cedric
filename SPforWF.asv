@@ -1,4 +1,4 @@
-function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,SideOpt,takeequalsample)
+function SPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,ReactOpt,takeequalsample)
 
 global UserQuestions
 paths = info.paths;
@@ -106,13 +106,13 @@ for midx = 1:nrMouse %For this mouse
     ypix = size(referenceimage,2);
     %Load Alan Brain model
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
-    for sideidx = 1:length(SideOpt)
-        Hwhole = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_'  SideOpt{sideidx} ' wholebrain']);
-        Hspot = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_'  SideOpt{sideidx} ' Spotlight']);
+    for ridx = 1:length(ReactOpt)
+        Hwhole = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_'  ReactOpt{ridx} ' wholebrain']);
+        Hspot = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_'  ReactOpt{ridx} ' Spotlight']);
         for twid = 1:length(TW)
             for id = 1:length(trialtypes)
                 sessioncount = 0;
-                hitdat = [];
+                rightdat = [];
                 errordat = [];
                 for didx = 1:size(logs,2) %Loop over days
                     if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
@@ -222,7 +222,7 @@ for midx = 1:nrMouse %For this mouse
                         
                         orientation = cellfun(@(X) X{2},conditionparts,'UniformOutput',0); %orientations
                         side = cellfun(@(X) X{4},conditionparts,'UniformOutput',0); %SIdes
-                        SideOpt = unique(side,'stable');
+                        ReactOpt = unique(side,'stable');
                         
                         
                         if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) ,'_' trialtypes{id}, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'))
@@ -267,27 +267,27 @@ for midx = 1:nrMouse %For this mouse
                         baseidx = find(timeline>=basel(1) & timeline<=basel(2));
                         
                         % load in rawdata
-                        hitidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOpt{sideidx}),ConditionNamestmp,'UniformOutput',0))));
+                        rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Right'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactOpt{ridx}),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
-                            hitidx(ismember(hitidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
+                            rightidx(ismember(rightidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
-                        for i = 1:length(hitidx)
-                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(hitidx(i)) '.mat'])).name));
+                        for i = 1:length(rightidx)
+                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(rightidx(i)) '.mat'])).name));
                             try
-                                rmtmp = removeidx(1:length(tmpload.ctrials{hitidx(i)}),hitidx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
+                                rmtmp = removeidx(1:length(tmpload.ctrials{rightidx(i)}),rightidx(i))';
+                                rm2tmp = ~ismember(tmpload.ctrials{rightidx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 | rm2tmp==1);
-                                trialidx = tmpload.ctrials{hitidx(i)};
+                                trialidx = tmpload.ctrials{rightidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 
-                                hitdattmp =  zeros(800,800,length(twidx),sum(rm3tmp),'single');
+                                rightdattmp =  zeros(800,800,length(twidx),sum(rm3tmp),'single');
                                 
                                 for j = 1:100:xpix
                                     tmpnw = single(tmpload.conddata(j:j+99,:,:,rm3tmp))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(tmpload.conddata,3)]),[1,2,4,3]);
-                                    hitdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
+                                    rightdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
                                 end
-                                hitdattmp = squeeze(nanmean(hitdattmp,3));
-                                hitdat = cat(3,hitdat,hitdattmp);
+                                rightdattmp = squeeze(nanmean(rightdattmp,3));
+                                rightdat = cat(3,rightdat,rightdattmp);
                            
                             catch ME
                                 disp(ME)
@@ -296,18 +296,18 @@ for midx = 1:nrMouse %For this mouse
                             clear tmpload
                         end
                         
-                        erroridx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0))) & ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOpt{sideidx}),ConditionNamestmp,'UniformOutput',0))));
+                        leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0))) & ~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactOpt{ridx}),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
-                            erroridx(ismember(erroridx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
+                            leftidx(ismember(leftidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
-                        for i = 1:length(erroridx)
-                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(erroridx(i)) '.mat'])).name));
+                        for i = 1:length(leftidx)
+                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(leftidx(i)) '.mat'])).name));
                             try
                                 
-                                rmtmp = removeidx(1:length(tmpload.ctrials{erroridx(i)}),erroridx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{erroridx(i)},fullfgtr);
+                                rmtmp = removeidx(1:length(tmpload.ctrials{leftidx(i)}),leftidx(i))';
+                                rm2tmp = ~ismember(tmpload.ctrials{leftidx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 | rm2tmp==1);
-                                trialidx = tmpload.ctrials{erroridx(i)};
+                                trialidx = tmpload.ctrials{leftidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 errodattmp = nan(800,800,length(twidx),sum(rm3tmp),'single');
                                 for j = 1:100:xpix
@@ -328,7 +328,7 @@ for midx = 1:nrMouse %For this mouse
                 
                 trainp = 0.9;
                 nleft = size(errordat,3);
-                nright =  size(hitdat,3);
+                nright =  size(rightdat,3);
                 
                 if nleft>nright
                     tn = floor(trainp.*nright); %Number of trial in training set
@@ -354,7 +354,7 @@ for midx = 1:nrMouse %For this mouse
                 removepixvec = reshape(removepix,[xpix*ypix,1]);
                 if wholebrainana
                     thistimer = tic;
-                    tmphit = reshape(hitdat,[xpix*ypix,nright]);
+                    tmphit = reshape(rightdat,[xpix*ypix,nright]);
                     tmperror = reshape(errordat,[xpix*ypix,nleft]);
                     
                     %                     tmprightz = zscore(tmpright');
@@ -392,9 +392,9 @@ for midx = 1:nrMouse %For this mouse
                    colormap(ActSupColorMap)
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel'])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel = '])
                     
-                    Perf{midx,sessioncount,ridx,id,twid}.CP = newauc;
+                    Perf{midx,sessioncount,ridx,id,twid}.SP = newauc;
                     disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
                    
                 end
@@ -403,8 +403,11 @@ for midx = 1:nrMouse %For this mouse
         end
     end
 end
-save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
+save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) strjoin(miceopt)]),'Perf')
 
 end
 
- 
+     
+                    
+                    
+
