@@ -392,8 +392,7 @@ for midx = 1:nrMouse %For this mouse
                    colormap(ActSupColorMap)
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel'])
-                    
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel' mouse])
                     Perf{midx,sessioncount,sideidx,id,twid}.CP = newauc;
                     Perf{midx,sessioncount,sideidx,id,twid}.nrerror = L1;
                     Perf{midx,sessioncount,sideidx,id,twid}.nrhit = L2;
@@ -403,6 +402,7 @@ for midx = 1:nrMouse %For this mouse
                 
             end
         end
+          saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP plot' trialtypes{id} SideOpt{sideidx} mouse]))
     end
 end
 save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
