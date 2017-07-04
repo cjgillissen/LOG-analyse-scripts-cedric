@@ -23,12 +23,10 @@ if strcmp(Stim2Check,'FGTask')
     % TW = {bigtw}
 else
     basel = [-300 0];
-    visint = [50 200];
-    vistw = [200 500]; %FOR FG
-    Delayearlytw = [600 1350];
-    Delaylatetw = [1400 1600];
+    vistw = [50 500]; %FOR FG
+    Delaytw = [800 1500];
     Responstw = [1900 2200];
-    TW = {basel,visint,vistw,Delayearlytw,Responstw,Delaylatetw}
+    TW = {vistw,Delaytw,Responstw}
     %     TW = {vistw};
     
 end
@@ -281,14 +279,12 @@ for midx = 1:nrMouse %For this mouse
                                 trialidx = trialidx(rm3tmp);
                                 
                                 hitdattmp =  zeros(800,800,length(twidx),sum(rm3tmp),'single');
-                                
                                 for j = 1:100:xpix
                                     tmpnw = single(tmpload.conddata(j:j+99,:,:,rm3tmp))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(tmpload.conddata,3)]),[1,2,4,3]);
                                     hitdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
                                 end
                                 hitdattmp = squeeze(nanmean(hitdattmp,3));
                                 hitdat = cat(3,hitdat,hitdattmp);
-                           
                             catch ME
                                 disp(ME)
                                 keyboard
