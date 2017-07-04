@@ -394,7 +394,9 @@ for midx = 1:nrMouse %For this mouse
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
                    title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel'])
                     
-                    Perf{midx,sessioncount,ridx,id,twid}.CP = newauc;
+                    Perf{midx,sessioncount,sideidx,id,twid}.CP = newauc;
+                    Perf{midx,sessioncount,sideidx,id,twid}.nrerror = L1;
+                    Perf{midx,sessioncount,sideidx,id,twid}.nrhit = L2;
                     disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
                    
                 end
