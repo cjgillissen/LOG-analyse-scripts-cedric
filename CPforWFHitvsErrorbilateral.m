@@ -13,7 +13,7 @@ contrastROIs = 0; %Contrast between conditions to determine ROI?
 EvokedActivityROI = 1;
 wholebrainana = 1;
 newsize = [400 400];
-
+scalefct = 0.5;
 
 if strcmp(Stim2Check,'FGTask')
     basel = [-250 -50];
@@ -353,7 +353,7 @@ for midx = 1:nrMouse %For this mouse
                     bounds = BrainModel{midx}.Model.Boundaries{throwawayareas(areaid)};
                     
                     for boundid = 1:length(bounds)
-                        removepix(poly2mask(bounds{boundid}(:,1),bounds{boundid}(:,2),xpix,ypix)) = 1;
+                        removepix(poly2mask(bounds{boundid}(:,1).*scalefct,bounds{boundid}(:,2).*scalefct,xpix,ypix)) = 1;
                     end
                 end
                 removepix = imfill(removepix,'holes');
@@ -393,7 +393,7 @@ for midx = 1:nrMouse %For this mouse
                    newauc(aucform) = smooth2a(tmpcp,2,2);
                    h =imagesc(reshape(newauc,xpix,ypix));
                    hold on
-                   scatter(BrainModel{midx}.Model.AllX,BrainModel{midx}.Model.AllY,'k.')
+                   scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
