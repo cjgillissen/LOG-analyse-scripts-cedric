@@ -14,7 +14,7 @@ EvokedActivityROI = 1;
 wholebrainana = 1;
 newsize = [400 400];
 scalefct = 0.5;
-cpimrange = [0.1 0.9];
+cpimrange = [0.3 0.7];
 
 if strcmp(Stim2Check,'FGTask')
     basel = [-250 -50];
@@ -109,7 +109,6 @@ for midx = 1:nrMouse %For this mouse
     %Load Alan Brain model
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
     
-        Hwhole = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_bothsides wholebrain']);
         for twid = 1:length(TW)
             for id = 1:length(trialtypes)
                 sessioncount = 0;
@@ -380,14 +379,14 @@ for midx = 1:nrMouse %For this mouse
                     L2 = size(tmphit(:,pixidx),1);
                     labels = [ones(L1,1);zeros(L2,1)];
                     scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
-%                     [~,~,~,AUC1] = perfcurve(labels,scores,1,'Nboot',500);
-                    [~,~,~,AUC1] = perfcurve(labels,scores,0); % error is positive
+%                     [~,~,~,AUC1] = perfcurve(labels,scores,1;
+                    [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
                     tmpcp(pixidx) = AUC1(1);
-%                     tmplowerbound = AUC1(2);
-%                     tmpupperbound = AUC1(3);
+                    tmplowerbound(pixidx) = AUC1(2);
+                    tmpupperbound(pixidx) = AUC1(3);
                    end
                    
-                   figure(Hwhole)
+                   Hwhole = figure;
                    aucform = true(xpix*ypix,1);
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
@@ -406,10 +405,14 @@ for midx = 1:nrMouse %For this mouse
                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
                    Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
-                   saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP plot, hit vs error bilateral stim' trialtypes{id} mouse]))
+                   saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP HvsE LandR' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
+                
+                   % Average cp per area. Also plot confidence bounds. !! 
+                   
                 end
                 
             end
+            
         end
           
           save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
