@@ -1,4 +1,4 @@
-function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,SideOpt,takeequalsample)
+function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
 
 global UserQuestions
 paths = info.paths;
@@ -107,8 +107,7 @@ for midx = 1:nrMouse %For this mouse
     %Load Alan Brain model
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
     for sideidx = 1:length(SideOpt)
-        Hwhole = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_'  SideOpt{sideidx} ' wholebrain']);
-        Hspot = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_'  SideOpt{sideidx} ' Spotlight']);
+        Hwhole = figure('units','normalized','outerposition',[0 0 1 1],'name',[mouse '_Allsess_bothsides wholebrain']);
         for twid = 1:length(TW)
             for id = 1:length(trialtypes)
                 sessioncount = 0;
