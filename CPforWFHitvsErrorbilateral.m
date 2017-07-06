@@ -14,6 +14,7 @@ EvokedActivityROI = 1;
 wholebrainana = 1;
 newsize = [400 400];
 scalefct = 0.5;
+cpimrange = [0.1 0.9];
 
 if strcmp(Stim2Check,'FGTask')
     basel = [-250 -50];
@@ -391,7 +392,7 @@ for midx = 1:nrMouse %For this mouse
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
                    newauc(aucform) = smooth2a(tmpcp,2,2);
-                   h =imagesc(reshape(newauc,xpix,ypix));
+                   h =imagesc(reshape(newauc,xpix,ypix),cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
@@ -399,18 +400,18 @@ for midx = 1:nrMouse %For this mouse
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
                    title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel bilateral' mouse])
-                   Perf{midx,sessioncount,id,twid}.CP = newauc;
-                   Perf{midx,sessioncount,id,twid}.nrerror = L1;
-                   Perf{midx,sessioncount,id,twid}.nrhit = L2;
-                   Perf{midx,sessioncount,id,twid}.lowerbound = tmplowerbound;
-                   Perf{midx,sessioncount,id,twid}.upperbound = tmpupperbound;
+                   Perf{midx,id,twid}.CP = newauc;
+                   Perf{midx,id,twid}.nrerror = L1;
+                   Perf{midx,id,twid}.nrhit = L2;
+                   Perf{midx,id,twid}.lowerbound = tmplowerbound;
+                   Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
-                   
+                   saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP plot, hit vs error bilateral stim' trialtypes{id} mouse]))
                 end
                 
             end
         end
-          saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP plot, hit vs error bilateral stim' trialtypes{id} mouse]))
+          
           save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
 
     end
