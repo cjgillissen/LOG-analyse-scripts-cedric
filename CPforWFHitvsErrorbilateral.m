@@ -379,11 +379,11 @@ for midx = 1:nrMouse %For this mouse
                     L2 = size(tmphit(:,pixidx),1);
                     labels = [ones(L1,1);zeros(L2,1)];
                     scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
-%                     [~,~,~,AUC1] = perfcurve(labels,scores,1;
-                    [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
-                    tmpcp(pixidx) = AUC1(1);
-                    tmplowerbound(pixidx) = AUC1(2);
-                    tmpupperbound(pixidx) = AUC1(3);
+                    [~,~,~,AUC1] = perfcurve(labels,scores,1);
+%                     [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
+                    tmpcp(pixidx) = AUC1
+%                     tmplowerbound(pixidx) = AUC1(2);
+%                     tmpupperbound(pixidx) = AUC1(3);
                    end
                    
                    Hwhole = figure;
@@ -402,8 +402,8 @@ for midx = 1:nrMouse %For this mouse
                    Perf{midx,id,twid}.CP = newauc;
                    Perf{midx,id,twid}.nrerror = L1;
                    Perf{midx,id,twid}.nrhit = L2;
-                   Perf{midx,id,twid}.lowerbound = tmplowerbound;
-                   Perf{midx,id,twid}.upperbound = tmpupperbound;
+%                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
+%                    Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
                    saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP HvsE LandR' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                 
