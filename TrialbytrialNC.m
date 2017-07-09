@@ -232,11 +232,6 @@ for midx = 1:nrMouse %For this mouse
             centerLV1 = ((xgrid-leftv1XY.Centroid(1)).^2 + (ygrid-leftv1XY.Centroid(2)).^2) <= 5.^2;
             
             
-            %% Make direction
-            if ~exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)]))
-                mkdir(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)]))
-            end
-            
             %% Load different conditions
             if  ~Redo && exist(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],['Baseline' num2str(baselinemethod) '_' TRIALTYPE, '_eqsample' num2str(takeequalsample)],'LEFTVSRIGHT.mat'))
                 if UserQuestions
