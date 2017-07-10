@@ -413,7 +413,7 @@ for midx = 1:nrMouse %For this mouse
 %                   RIGHT V1 seed when STIM is LEFT
                     rightv1seed = leftdat;
                     seedtmpRv1 = repmat(centerRV1,[1,1,size(leftdat,3)]);
-                    rightv1seed(~seedtmpLv1) = nan;
+                    rightv1seed(~seedtmpRv1) = nan;
                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
                     corrvec = corr(rightv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])');
                     corrmapLEFTstimRIGHTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
@@ -429,7 +429,7 @@ for midx = 1:nrMouse %For this mouse
 %                   RIGHT V1 seed when STIM is RIGHT
                     rightv1seed = rightdat;
                     seedtmpRv1 = repmat(centerRV1,[1,1,size(rightdat,3)]);
-                    rightv1seed(~seedtmpLv1) = nan;
+                    rightv1seed(~seedtmpRv1) = nan;
                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
                     corrvec = corr(rightv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)])');
                     corrmapRIGHTstimRIGHTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
@@ -438,14 +438,15 @@ for midx = 1:nrMouse %For this mouse
                     % make plot, average epr area.
                    %RIGHTstimLEFTseed 
                    LEFTV1 = figure;
-                   lft =imagesc(corrmapRv1,cpimrange);
+                   links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
+                   viscircles(
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
-                   set(h,'AlphaData',~isnan(corrmapRv1));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations' mouse])
+                   set(links,'AlphaData',~isnan(corrmapRv1));
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations Right stim' mouse])
                    NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
 
@@ -455,13 +456,13 @@ for midx = 1:nrMouse %For this mouse
                    
                    %LEFTstimRIGHTseed
                    RIGHTV1 = figure;
-                   h =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
+                   rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
-                   set(h,'AlphaData',~isnan(corrmapRv1));
+                   set(rechts,'AlphaData',~isnan(corrmapRv1));
                    title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations' mouse])
                    NCmat{midx,id,twid,loopreactionidx}.RIGHTV1 = corrmapLEFTstimRIGHTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtRIGHTV1 = size(leftdat,3);

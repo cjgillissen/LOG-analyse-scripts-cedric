@@ -103,7 +103,11 @@ for midx = 1:nrMouse %For this mouse
     newroiscount = 1;
     mouse = miceopt{midx};
     mousecount = mousecount+1
-    referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+    try referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+    catch
+        referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFilepRF.bmp')));
+    end
+    
     xpix = newsize(1);
     ypix = newsize(2);
     %Load Alan Brain model
@@ -391,14 +395,6 @@ for midx = 1:nrMouse %For this mouse
                 removepix = imfill(removepix,'holes');
                 removepixvec = reshape(removepix,[xpix*ypix,1]);
                 
-%                     tmphit = reshape(hitdat,[xpix*ypix,nright]);
-%                     tmperror = reshape(errordat,[xpix*ypix,nleft]);
-%                     tmperror = tmperror';
-%                     tmphit = tmphit';
-%                     removenanpix = find(squeeze(sum(isnan(tmperror),1)>0) | squeeze(sum(isnan(tmphit),1)>0) | removepixvec' == 1);
-%                     tmperror(:,removenanpix) = [];
-%                     tmphit(:,removenanpix) = [];
-                
                 %% compute noise correlations per side. 
                 % Reactions are in the parfor loop
                 
@@ -441,41 +437,36 @@ for midx = 1:nrMouse %For this mouse
                    links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
+                   viscircles(leftv1XY,10,links,1,'k','- -')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
-                   set(links,'AlphaData',~isnan(corrmapRv1));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations' mouse])
+                   set(links,'AlphaData',~isnan(corrmapRIGHTstimLEFTseed));
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations Right stim' mouse])
                    NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
 
                    disp(['NC analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
-                   saveas(LEFTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC ' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
-                
+                   saveas(LEFTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC LEFTV1 seed ' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                    
                    %LEFTstimRIGHTseed
                    RIGHTV1 = figure;
                    rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
+                   viscircles(rightv1XY,10,rechts,1,'k','- -')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
-                   set(rechts,'AlphaData',~isnan(corrmapRv1));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations' mouse])
+                   set(rechts,'AlphaData',~isnan(corrmapLEFTstimRIGHTseed));
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations Left side stimulus' ReactOptloop{loopreactionidx}  mouse])
                    NCmat{midx,id,twid,loopreactionidx}.RIGHTV1 = corrmapLEFTstimRIGHTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtRIGHTV1 = size(leftdat,3);
                   
                    disp(['NC analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
                    saveas(RIGHTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC Right V1 seed' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                 
-                   % Average cp per area. Also plot confidence bounds. !! 
-                   
-                   
-                   
-                   
-                    
-                    
+                  
              end
             end
         end
@@ -483,9 +474,6 @@ end
 end
 
                     
-             
-        
-       
           
 %           save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
 
