@@ -1,4 +1,4 @@
-function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
+function Noisecorrelationrawdata(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
 
 paths = info.paths;
 logs = info.logs;
@@ -139,7 +139,7 @@ for midx = 1:nrMouse %For this mouse
                 leftdat = [];
                 rightdat = [];
              
-                 
+             for loopreactionidx = 1:length(ReactOptloop)     
                 for didx = 1:size(logs,2) %Loop over days
                     if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
                         continue
@@ -293,7 +293,7 @@ for midx = 1:nrMouse %For this mouse
                         
                         %% load in rawdata
                         
-                        for loopreactionidx = 1:length(ReactOptloop)
+                       thistimer = tic;
                         
                         leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactionOpt{loopreactionidx}),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
@@ -371,10 +371,10 @@ for midx = 1:nrMouse %For this mouse
                             clear tmpload
                             clear leftdattmp
                         end
-                     end
+                        
                     end
                 end
-            
+             
                     
                 %Remove areas
                 throwawayareas = find(cellfun(@isempty,BrainModel{midx}.Model.Rnames));
@@ -402,33 +402,88 @@ for midx = 1:nrMouse %For this mouse
                 %% compute noise correlations per side. 
                 % Reactions are in the parfor loop
                 
-                % use RIGHT V1 seed when STIM is LEFT
-     
+%                   LEFT V1 seed when STIM is RIGHT
                     leftv1seed = rightdat;
                     seedtmpLv1 = repmat(centerLV1,[1,1,size(rightdat,3)]);
                     leftv1seed(~seedtmpLv1) = nan;
                     leftv1seed = nanmean(reshape(leftv1seed,[size(leftv1seed,1)*size(leftv1seed,2),size(leftv1seed,3)]),1);
                     corrvec = corr(leftv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)])');
-                    corrmapLv1 = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
+                    corrmapRIGHTstimLEFTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
                     
+%                   RIGHT V1 seed when STIM is LEFT
                     rightv1seed = leftdat;
-                    seedtmpRv1 = repmat(centerLV1,[1,1,size(leftdat,3)]);
-                    rightv1seed(~seedtmpLv1) = nan;
+                    seedtmpRv1 = repmat(centerRV1,[1,1,size(leftdat,3)]);
+                    rightv1seed(~seedtmpRv1) = nan;
                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
                     corrvec = corr(rightv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])');
-                    corrmapRv1 = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
+                    corrmapLEFTstimRIGHTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
+                    
+%                   LEFT V1 seed when STIM is LEFT
+                    leftv1seed = leftdat;
+                    seedtmpLv1 = repmat(centerLV1,[1,1,size(leftdat,3)]);
+                    leftv1seed(~seedtmpLv1) = nan;
+                    leftv1seed = nanmean(reshape(leftv1seed,[size(leftv1seed,1)*size(leftv1seed,2),size(leftv1seed,3)]),1);
+                    corrvec = corr(leftv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])');
+                    corrmapLEFTstimLEFTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
+                    
+%                   RIGHT V1 seed when STIM is RIGHT
+                    rightv1seed = rightdat;
+                    seedtmpRv1 = repmat(centerRV1,[1,1,size(rightdat,3)]);
+                    rightv1seed(~seedtmpRv1) = nan;
+                    rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
+                    corrvec = corr(rightv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)])');
+                    corrmapRIGHTstimRIGHTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
                     
                     
-                    
-                    end
-                    
-                  
+                    % make plot, average epr area.
+                   %RIGHTstimLEFTseed 
+                   LEFTV1 = figure;
+                   links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
+                   hold on
+                   scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
+                   axis square
+                   colormap(ActSupColorMap)
+                   colorbar
+                   set(links,'AlphaData',~isnan(corrmapRv1));
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations' mouse])
+                   NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
+                   NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
+
+                   disp(['NC analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
+                   saveas(LEFTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC ' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                 
-                     end
-                    end
-                end
+                   
+                   %LEFTstimRIGHTseed
+                   RIGHTV1 = figure;
+                   rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
+                   hold on
+                   scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
+                   axis square
+                   colormap(ActSupColorMap)
+                   colorbar
+                   set(rechts,'AlphaData',~isnan(corrmapRv1));
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations' mouse])
+                   NCmat{midx,id,twid,loopreactionidx}.RIGHTV1 = corrmapLEFTstimRIGHTseed;
+                   NCmat{midx,id,twid,loopreactionidx}.nrtRIGHTV1 = size(leftdat,3);
+                  
+                   disp(['NC analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
+                   saveas(RIGHTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC Right V1 seed' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
+                
+                   % Average cp per area. Also plot confidence bounds. !! 
+                   
+                   
+                   
+                   
+                    
+                    
+             end
             end
         end
+end
+end
+
+                    
+             
         
        
           
