@@ -12,7 +12,7 @@ contrastROIs = 0; %Contrast between conditions to determine ROI?
 EvokedActivityROI = 1;
 newsize = [400 400];
 scalefct = 0.5;
-cpimrange = [-0.5 0.8];
+cpimrange = [-0.5 1];
 ReactOptloop = {'Hit','Error'};
 
 
@@ -378,7 +378,6 @@ for midx = 1:nrMouse %For this mouse
                         
                     end
                 end
-             
                     
                 %Remove areas
                 throwawayareas = find(cellfun(@isempty,BrainModel{midx}.Model.Rnames));
@@ -444,7 +443,7 @@ for midx = 1:nrMouse %For this mouse
                    h = colorbar;
                    ylabel(h,'Pearson correlation coefficient') 
                    set(links,'AlphaData',~isnan(corrmapRIGHTstimLEFTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed' ReactOptloop{loopreactionidx}  mouse])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed' ReactOptloop{loopreactionidx}  mouse 'nrt=' num2str(size(rightdat,3))])
                    NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
  
@@ -463,7 +462,7 @@ for midx = 1:nrMouse %For this mouse
                    h = colorbar;
                    ylabel(h,'Pearson correlation coefficient')
                    set(rechts,'AlphaData',~isnan(corrmapLEFTstimRIGHTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Leftstim RIGHT seed' ReactOptloop{loopreactionidx}  mouse])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Leftstim RIGHT seed ' ReactOptloop{loopreactionidx}  mouse 'nrt=' num2str(size(leftdat,3))])
                    NCmat{midx,id,twid,loopreactionidx}.RIGHTV1 = corrmapLEFTstimRIGHTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtRIGHTV1 = size(leftdat,3);
                   
