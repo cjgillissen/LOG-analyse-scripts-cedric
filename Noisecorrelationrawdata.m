@@ -315,7 +315,7 @@ for midx = 1:nrMouse %For this mouse
                                 leftdattmp =  nan(400,400,length(twidx),sum(rm3tmp),'single');
                                 resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
 
-                                if ~any(TW{twidx}<0) % if TW is baseline use only baseline division
+                                if ~any(TW{twid}<0) % if TW is baseline use only baseline division
                                 for j = 1:100:newsize(1)
                                     tmpnw = single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
                                     leftdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
@@ -354,7 +354,7 @@ for midx = 1:nrMouse %For this mouse
                                 rightdattmp = nan(400,400,length(twidx),sum(rm3tmp),'single');
                                 resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
                                 
-                                if ~any(TW{twidx}<0)
+                                if ~any(TW{twid}<0)
                                 for j = 1:100:newsize(1)
                                     tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
                                     rightdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
@@ -437,29 +437,33 @@ for midx = 1:nrMouse %For this mouse
                    links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
-                   viscircles(leftv1XY,10,links,1,'k','- -')
                    axis square
+                   assen = gca;
+                   viscircles(assen,round(leftv1XY.Centroid),6,'Color','k','LineStyle','- -')
                    colormap(ActSupColorMap)
-                   colorbar
+                   h = colorbar;
+                   ylabel(h,'Pearson correlation coefficient') 
                    set(links,'AlphaData',~isnan(corrmapRIGHTstimLEFTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations Right stim' mouse])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed' ReactOptloop{loopreactionidx}  mouse])
                    NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
-
+ 
                    disp(['NC analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
-                   saveas(LEFTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC LEFTV1 seed ' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
+                   saveas(LEFTV1,fullfile('C:\Users\gillissen\Desktop\Figures NC',['NC Rightstim LEFT seed' ReactOptloop{loopreactionidx} num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                    
                    %LEFTstimRIGHTseed
                    RIGHTV1 = figure;
                    rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
-                   viscircles(rightv1XY,10,rechts,1,'k','- -')
                    axis square
+                   assen = gca;
+                   viscircles(assen,round(rightv1XY.Centroid),6,'Color','k','LineStyle','- -')
                    colormap(ActSupColorMap)
-                   colorbar
+                   h = colorbar;
+                   ylabel(h,'Pearson correlation coefficient')
                    set(rechts,'AlphaData',~isnan(corrmapLEFTstimRIGHTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Noise Correlations Left side stimulus' ReactOptloop{loopreactionidx}  mouse])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Leftstim RIGHT seed' ReactOptloop{loopreactionidx}  mouse])
                    NCmat{midx,id,twid,loopreactionidx}.RIGHTV1 = corrmapLEFTstimRIGHTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtRIGHTV1 = size(leftdat,3);
                   
