@@ -3,7 +3,7 @@ function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,tak
 global UserQuestions
 paths = info.paths;
 logs = info.logs;
-nrMouse = size(paths,1);
+nrMouse = length(miceopt);
 
 %% USER INPUT
 nback = 20;
@@ -380,8 +380,8 @@ for midx = 1:nrMouse %For this mouse
                     labels = [ones(L1,1);zeros(L2,1)];
                     scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
                     [~,~,~,AUC1] = perfcurve(labels,scores,1);
-%                     [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
-                    tmpcp(pixidx) = AUC1
+%                   [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
+                    tmpcp(pixidx) = AUC1;
 %                     tmplowerbound(pixidx) = AUC1(2);
 %                     tmpupperbound(pixidx) = AUC1(3);
                    end
