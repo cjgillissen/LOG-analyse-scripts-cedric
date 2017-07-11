@@ -437,8 +437,8 @@ for midx = 1:nrMouse %For this mouse
                     % make plot, average epr area.
                    %RIGHTstimLEFTseed 
                    LEFTV1 = figure;
-                   quantvaldffleftv1 = quantile(abs(corrmapRIGHTstimLEFTseed(:)),0.90);
-                   links =imagesc(corrmapRIGHTstimLEFTseed,[0 quantvaldffleftv1]);
+                   quantvaldff = quantile(abs(corrmapRIGHTstimLEFTseed(:)),0.98);
+                   links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
@@ -458,8 +458,7 @@ for midx = 1:nrMouse %For this mouse
 
                    %LEFTstimRIGHTseed
                    RIGHTV1 = figure;
-                   quantvaldffrightv1 = quantile(abs(corrmapLEFTstimRIGHTseed(:)),0.90);
-                   rechts =imagesc(corrmapLEFTstimRIGHTseed,[0 quantvaldffrightv1]);
+                   rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
