@@ -437,8 +437,8 @@ for midx = 1:nrMouse %For this mouse
                     % make plot, average epr area.
                    %RIGHTstimLEFTseed 
                    LEFTV1 = figure;
-                   quantvaldff = quantile(abs(corrmapRIGHTstimLEFTseed(:)),0.98);
-                   links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
+                   quantvaldffleftv1 = quantile(abs(corrmapRIGHTstimLEFTseed(:)),0.90);
+                   links =imagesc(corrmapRIGHTstimLEFTseed,[0 quantvaldffleftv1]);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
@@ -448,7 +448,7 @@ for midx = 1:nrMouse %For this mouse
                    h = colorbar;
                    ylabel(h,'Pearson correlation coefficient') 
                    set(links,'AlphaData',~isnan(corrmapRIGHTstimLEFTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed' ReactOptloop{loopreactionidx}  mouse 'nrt=' num2str(size(rightdat,3))])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed ' ReactOptloop{loopreactionidx}  mouse ' nrt=' num2str(size(rightdat,3))])
                    NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
  
@@ -458,7 +458,8 @@ for midx = 1:nrMouse %For this mouse
 
                    %LEFTstimRIGHTseed
                    RIGHTV1 = figure;
-                   rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
+                   quantvaldffrightv1 = quantile(abs(corrmapLEFTstimRIGHTseed(:)),0.90);
+                   rechts =imagesc(corrmapLEFTstimRIGHTseed,[0 quantvaldffrightv1]);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square

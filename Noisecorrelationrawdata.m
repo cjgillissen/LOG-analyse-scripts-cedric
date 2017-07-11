@@ -299,7 +299,7 @@ for midx = 1:nrMouse %For this mouse
                         
                        thistimer = tic;
                         
-                        leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactionOpt{loopreactionidx}),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0))));
+                        leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactOptloop{loopreactionidx}),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
                             leftidx(ismember(leftidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
@@ -338,7 +338,7 @@ for midx = 1:nrMouse %For this mouse
 %                             clear tmpload
                         end
                         
-                        rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactionOpt{loopreactionidx}),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0))));
+                        rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactOptloop{loopreactionidx}),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
                             rightidx(ismember(rightidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
@@ -448,7 +448,7 @@ for midx = 1:nrMouse %For this mouse
                    h = colorbar;
                    ylabel(h,'Pearson correlation coefficient') 
                    set(links,'AlphaData',~isnan(corrmapRIGHTstimLEFTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed' ReactOptloop{loopreactionidx}  mouse 'nrt=' num2str(size(rightdat,3))])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Rightstim LEFT seed ' ReactOptloop{loopreactionidx}  mouse ' nrt=' num2str(size(rightdat,3))])
                    NCmat{midx,id,twid,loopreactionidx}.LEFTV1 = corrmapRIGHTstimLEFTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtLEFTV1 = size(rightdat,3);
  
