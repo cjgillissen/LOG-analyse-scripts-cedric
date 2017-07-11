@@ -361,12 +361,21 @@ for midx = 1:nrMouse %For this mouse
                     tmpupperbound = zeros(size(tmperror,2),1);
                  
                     %% compute CP for whole brain
-                    % how to get back to brainpixelssss???
-                   for pixidx = 1:size(tmperror,2)
-                       
-                    L1 = size(tmperror(:,pixidx),1);
-                    L2 = size(tmphit(:,pixidx),1);
-                    labels = [ones(L1,1);zeros(L2,1)];
+                    
+                    nerror = size(tmperror(:,pixidx),1);
+                    nhit = size(tmphit(:,pixidx),1);
+                    if nerror<nhit
+                     trialvecerror = sort(randperm(nhit,nerror));
+                     labels = [ones(nerror ,1);zeros(nerror,1)];
+                     scores = [tmperror(trialvec,pixidx);tmphit(:,pixidx)];
+                    elseif nhit<nerror
+                       trialvec = randperm(nhit,nerror);
+                    else
+                        
+                     
+                  labels = [ones(nerror,1);zeros(nhit,1)];
+                  
+                  parfor (pixidx = 1:size(tmperror,2),4)
                     scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
                     [~,~,~,AUC1] = perfcurve(labels,scores,1);
 %                   [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
@@ -389,8 +398,8 @@ for midx = 1:nrMouse %For this mouse
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
                    title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) SideOptloop{sideloopidx} 'CP per Pixel' mouse trialtypes{id}])
                    Perf{midx,id,twid,sideloopidx}.CP = newauc;
-                   Perf{midx,id,twid,sideloopidx}.nrerror = L1;
-                   Perf{midx,id,twid,sideloopidx}.nrhit = L2;
+                   Perf{midx,id,twid,sideloopidx}.nrerror = nerror;
+                   Perf{midx,id,twid,sideloopidx}.nrhit = nhit;
 %                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
 %                    Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) SideOptloop{sideloopidx} ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
@@ -403,7 +412,9 @@ for midx = 1:nrMouse %For this mouse
               save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')  
             end
             
-        end
+end
+end
+
           
           
 
