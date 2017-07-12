@@ -306,7 +306,7 @@ for midx = 1:nrMouse %For this mouse
                         for i = 1:length(leftidx)
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(leftidx(i)) '.mat'])).name));
                             try
-                                rmtmp = removeidx(1:length(tmpload.ctrials{leftidx(i)}),leftidx(i))';
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{leftidx(i)}),leftidx(i))';
                                 rm2tmp = ~ismember(tmpload.ctrials{leftidx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 | rm2tmp==1);
                                 trialidx = tmpload.ctrials{leftidx(i)};
@@ -346,7 +346,7 @@ for midx = 1:nrMouse %For this mouse
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(rightidx(i)) '.mat'])).name));
                             try
                                 
-                                rmtmp = removeidx(1:length(tmpload.ctrials{rightidx(i)}),rightidx(i))';
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{rightidx(i)}),rightidx(i))';
                                 rm2tmp = ~ismember(tmpload.ctrials{rightidx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 | rm2tmp==1);
                                 trialidx = tmpload.ctrials{rightidx(i)};
@@ -362,7 +362,7 @@ for midx = 1:nrMouse %For this mouse
                                 else 
                                     for j = 1:100:newsize(1)
                                     tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
-                                    rightdattmp(j:j+99,:,:,:) = imgaussfilt(tmpnw(:,:,twidx,:),2);
+                                    rightdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
                                     end
                                 end
                                     

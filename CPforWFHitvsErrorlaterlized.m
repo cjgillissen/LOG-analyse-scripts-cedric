@@ -1,4 +1,4 @@
-function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
+function CPforWFHitvsErrorlaterlized(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
 
 global UserQuestions
 paths = info.paths;
@@ -31,7 +31,7 @@ else
     Delayearlytw = [600 1350];
     Delaylatetw = [1400 1600];
     Responstw = [1900 2200];
-    TW = {visint,vistw,Delayearlytw,Responstw,Delaylatetw}
+    TW = {basel,visint,vistw,Delayearlytw,Responstw,Delaylatetw}
     %     TW = {vistw};
     
 end
@@ -104,7 +104,12 @@ for midx = 1:nrMouse %For this mouse
     newroiscount = 1;
     mouse = miceopt{midx};
     mousecount = mousecount+1
-    referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+    try
+        referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+    catch
+        referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFilepRF.bmp')));
+    end
+
     xpix = newsize(1);
     ypix = newsize(2);
     %Load Alan Brain model
@@ -269,14 +274,14 @@ for midx = 1:nrMouse %For this mouse
                         baseidx = find(timeline>=basel(1) & timeline<=basel(2));
                         
                         %% load in rawdata
-                        hitidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOptloop{sideloopidx),ConditionNamestmp,'UniformOutput',0))));
+                        hitidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOptloop{sideloopidx}),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
                             hitidx(ismember(hitidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
                         for i = 1:length(hitidx)
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(hitidx(i)) '.mat'])).name));
                             try
-                                rmtmp = removeidx(1:length(tmpload.ctrials{hitidx(i)}),hitidx(i))';
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{hitidx(i)}),hitidx(i))';
                                 rm2tmp = ~ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 | rm2tmp==1);
                                 trialidx = tmpload.ctrials{hitidx(i)};
@@ -284,11 +289,19 @@ for midx = 1:nrMouse %For this mouse
                                 
                                 hitdattmp =  zeros(400,400,length(twidx),sum(rm3tmp),'single');
                                 resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
-
+                                
+                                if ~any(TW{twid}<0)
                                 for j = 1:100:newsize(1)
                                     tmpnw = single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
                                     hitdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
                                 end
+                                else
+                                  for j = 1:100:newsize(1)
+                                    tmpnw = single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
+                                    hitdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
+                                  end
+                                end
+                                    
                                 hitdattmp = squeeze(nanmean(hitdattmp,3));
                                 hitdat = cat(3,hitdat,hitdattmp);
                            
@@ -299,7 +312,7 @@ for midx = 1:nrMouse %For this mouse
                             clear tmpload
                         end
                         
-                        erroridx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOptloop{sideloopidx),ConditionNamestmp,'UniformOutput',0))));
+                        erroridx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOptloop{sideloopidx}),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')    
                             erroridx(ismember(erroridx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
@@ -307,7 +320,7 @@ for midx = 1:nrMouse %For this mouse
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(erroridx(i)) '.mat'])).name));
                             try
                                 
-                                rmtmp = removeidx(1:length(tmpload.ctrials{erroridx(i)}),erroridx(i))';
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{erroridx(i)}),erroridx(i))';
                                 rm2tmp = ~ismember(tmpload.ctrials{erroridx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 | rm2tmp==1);
                                 trialidx = tmpload.ctrials{erroridx(i)};
@@ -318,10 +331,18 @@ for midx = 1:nrMouse %For this mouse
                                 %binning 
                                 resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
                                 
+                                if ~any(TW{twid}<0)
                                 for j = 1:100:newsize(1)
                                     tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
                                     errodattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
                                 end
+                                else
+                                for j = 1:100:newsize(1)
+                                    tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
+                                    errodattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
+                                end
+                                end
+                                
                                 errodattmp = squeeze(nanmean(errodattmp,3));
                                 errordat = cat(3,errordat,errodattmp);
                             catch ME
@@ -349,8 +370,8 @@ for midx = 1:nrMouse %For this mouse
                 removepix = imfill(removepix,'holes');
                 removepixvec = reshape(removepix,[xpix*ypix,1]);
                     thistimer = tic;
-                    tmphit = reshape(hitdat,[xpix*ypix,nright]);
-                    tmperror = reshape(errordat,[xpix*ypix,nleft]);
+                    tmphit = reshape(hitdat,[xpix*ypix,size(hitdat,3)]);
+                    tmperror = reshape(errordat,[xpix*ypix,size(errordat,3)]);
                     tmperror = tmperror';
                     tmphit = tmphit';
                     removenanpix = find(squeeze(sum(isnan(tmperror),1)>0) | squeeze(sum(isnan(tmphit),1)>0) | removepixvec' == 1);
@@ -362,19 +383,18 @@ for midx = 1:nrMouse %For this mouse
                  
                     %% compute CP for whole brain
                     
-                    nerror = size(tmperror(:,pixidx),1);
-                    nhit = size(tmphit(:,pixidx),1);
-                    if nerror<nhit
-                     trialvecerror = sort(randperm(nhit,nerror));
-                     labels = [ones(nerror ,1);zeros(nerror,1)];
-                     scores = [tmperror(trialvec,pixidx);tmphit(:,pixidx)];
-                    elseif nhit<nerror
-                       trialvec = randperm(nhit,nerror);
-                    else
-                        
-                     
-                  labels = [ones(nerror,1);zeros(nhit,1)];
-                  
+%                     nerror = size(tmperror(:,pixidx),1);
+%                     nhit = size(tmphit(:,pixidx),1);
+%                     if nerror<nhit
+%                      trialvecerror = sort(randperm(nhit,nerror));
+%                      labels = [ones(nerror ,1);zeros(nerror,1)];
+%                      scores = [tmperror(trialvec,pixidx);tmphit(:,pixidx)];
+%                     elseif nhit<nerror
+%                        trialvec = randperm(nhit,nerror);
+%                     else
+                  L1 = size(tmperror,1);
+                  L2 = size(tmphit,1);
+                  labels = [ones(L1,1);zeros(L2,1)];
                   parfor (pixidx = 1:size(tmperror,2),4)
                     scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
                     [~,~,~,AUC1] = perfcurve(labels,scores,1);
@@ -389,17 +409,18 @@ for midx = 1:nrMouse %For this mouse
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
                    newauc(aucform) = smooth2a(tmpcp,2,2);
-                   h =imagesc(reshape(newauc,xpix,ypix),cpimrange);
+                   quantval = quantile(abs(newauc),0.95);
+                   h =imagesc(reshape(newauc,xpix,ypix),[0 quantval]);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) SideOptloop{sideloopidx} 'CP per Pixel' mouse trialtypes{id}])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)), '', SideOptloop{sideloopidx},'', 'CP per Pixel' ,'', mouse, '', trialtypes{id}])
                    Perf{midx,id,twid,sideloopidx}.CP = newauc;
-                   Perf{midx,id,twid,sideloopidx}.nrerror = nerror;
-                   Perf{midx,id,twid,sideloopidx}.nrhit = nhit;
+                   Perf{midx,id,twid,sideloopidx}.nrerror = L1;
+                   Perf{midx,id,twid,sideloopidx}.nrhit = L2;
 %                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
 %                    Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) SideOptloop{sideloopidx} ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
