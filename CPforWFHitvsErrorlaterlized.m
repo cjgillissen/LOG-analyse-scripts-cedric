@@ -108,7 +108,7 @@ for midx = 1:nrMouse %For this mouse
     xpix = newsize(1);
     ypix = newsize(2);
     %Load Alan Brain model
-    BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'))
+    BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'));
     
         for twid = 1:length(TW)
             for id = 1:length(trialtypes)
@@ -409,7 +409,7 @@ for midx = 1:nrMouse %For this mouse
                    
                end
             end
-              save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')  
+              save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perflateral')  
             end
             
 end
