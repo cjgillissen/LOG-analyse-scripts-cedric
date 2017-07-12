@@ -485,55 +485,56 @@ for midx = 1:nrMouse %For this mouse
         save(fullfile('C:\Users\gillissen\Desktop\Figures NC','NCmat'),'NCmat');
 end
 
-
-
-%% Make contrast plots 
-
-for midx = 1:nrMouse %For this mouse
-
-    mouse = miceopt{midx};
-    mousecount = mousecount+1
-    try referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
-    catch
-        referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFilepRF.bmp')));
-    end
-    xpix = newsize(1);
-    ypix = newsize(2);
-    %Load Alan Brain model
-    BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'));
-    % Create mask of approximate stimulus representation in v1
-    evrois = load(fullfile('C:\Users\gillissen\Desktop\EvokedROIMouse',[mouse 'EvokedActivROIs']));
-    %rightv1 stimulus representation
-    rightv1 = zeros(newsize);
-    rightv1(sub2ind(size(rightv1),round(evrois.rois{1}.xi.*scalefct),round(evrois.rois{1}.yi.*scalefct))) =1;
-    rightv1 = imfill(rightv1');
-    rightv1XY = regionprops(rightv1,'centroid');
-    [xgrid, ygrid] = meshgrid(1:newsize(2), 1:newsize(1));
-    centerRV1 = ((xgrid-rightv1XY.Centroid(1)).^2 + (ygrid-rightv1XY.Centroid(2)).^2) <= 5.^2;
-    %leftv1 stimulus representation
-    leftv1 = zeros(newsize);
-    leftv1(sub2ind(size(leftv1),round(evrois.rois{2}.xi.*scalefct),round(evrois.rois{2}.yi.*scalefct))) =1;
-    leftv1 = imfill(leftv1');
-    leftv1XY = regionprops(leftv1,'centroid');
-    [xgrid, ygrid] = meshgrid(1:newsize(2), 1:newsize(1));
-    centerLV1 = ((xgrid-leftv1XY.Centroid(1)).^2 + (ygrid-leftv1XY.Centroid(2)).^2) <= 5.^2;
-
-        for twid = 1:length(TW)
-            for id = 1:length(trialtypes)
-              for loopreactionidx = 1:length(ReactOptloop)     % not necessary, chooise yourself. 
-              
-                  
-
-
 end
 
-            end
-        end
-end
-end
 
-          
-%           save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
-
-
- 
+% %% Make contrast plots 
+% 
+% for midx = 1:nrMouse %For this mouse
+% 
+%     mouse = miceopt{midx};
+%     mousecount = mousecount+1
+%     try referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+%     catch
+%         referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFilepRF.bmp')));
+%     end
+%     xpix = newsize(1);
+%     ypix = newsize(2);
+%     %Load Alan Brain model
+%     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'));
+%     % Create mask of approximate stimulus representation in v1
+%     evrois = load(fullfile('C:\Users\gillissen\Desktop\EvokedROIMouse',[mouse 'EvokedActivROIs']));
+%     %rightv1 stimulus representation
+%     rightv1 = zeros(newsize);
+%     rightv1(sub2ind(size(rightv1),round(evrois.rois{1}.xi.*scalefct),round(evrois.rois{1}.yi.*scalefct))) =1;
+%     rightv1 = imfill(rightv1');
+%     rightv1XY = regionprops(rightv1,'centroid');
+%     [xgrid, ygrid] = meshgrid(1:newsize(2), 1:newsize(1));
+%     centerRV1 = ((xgrid-rightv1XY.Centroid(1)).^2 + (ygrid-rightv1XY.Centroid(2)).^2) <= 5.^2;
+%     %leftv1 stimulus representation
+%     leftv1 = zeros(newsize);
+%     leftv1(sub2ind(size(leftv1),round(evrois.rois{2}.xi.*scalefct),round(evrois.rois{2}.yi.*scalefct))) =1;
+%     leftv1 = imfill(leftv1');
+%     leftv1XY = regionprops(leftv1,'centroid');
+%     [xgrid, ygrid] = meshgrid(1:newsize(2), 1:newsize(1));
+%     centerLV1 = ((xgrid-leftv1XY.Centroid(1)).^2 + (ygrid-leftv1XY.Centroid(2)).^2) <= 5.^2;
+% 
+%         for twid = 1:length(TW)
+%             for id = 1:length(trialtypes)
+%               for loopreactionidx = 1:length(ReactOptloop)     % not necessary, chooise yourself. 
+%               
+%                   
+% 
+% 
+% end
+% 
+%             end
+%         end
+% end
+% end
+% 
+%           
+% %           save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
+% 
+% 
+%  
