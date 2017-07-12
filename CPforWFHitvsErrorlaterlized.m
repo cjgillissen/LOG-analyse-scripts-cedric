@@ -409,18 +409,19 @@ for midx = 1:nrMouse %For this mouse
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
                    newauc(aucform) = smooth2a(tmpcp,2,2);
-                   quantval = quantile(abs(newauc),0.95);
-                   h =imagesc(reshape(newauc,xpix,ypix),[0 quantval]);
+                   quantvallower = quantile(abs(newauc),0.05);
+                   quantvalhigher = quantile(abs(newauc),0.95);
+                   h =imagesc(reshape(newauc,xpix,ypix),[quantvallower quantvalhigher]);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)), '', SideOptloop{sideloopidx},'', 'CP per Pixel' ,'', mouse, '', trialtypes{id}])
-                   Perf{midx,id,twid,sideloopidx}.CP = newauc;
-                   Perf{midx,id,twid,sideloopidx}.nrerror = L1;
-                   Perf{midx,id,twid,sideloopidx}.nrhit = L2;
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)), ' ', SideOptloop{sideloopidx},' ', 'CP per stimulus' ,' ', mouse, ' ', trialtypes{id}])
+                   Perflateral{midx,id,twid,sideloopidx}.CP = newauc;
+                   Perflateral{midx,id,twid,sideloopidx}.nrerror = L1;
+                   Perflateral{midx,id,twid,sideloopidx}.nrhit = L2;
 %                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
 %                    Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) SideOptloop{sideloopidx} ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
