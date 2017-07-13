@@ -282,8 +282,9 @@ for midx = 1:nrMouse %For this mouse
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(hitidx(i)) '.mat'])).name));
                             try
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{hitidx(i)}),hitidx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
-                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                rm2tmp = ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
                                 trialidx = tmpload.ctrials{hitidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 
@@ -304,13 +305,14 @@ for midx = 1:nrMouse %For this mouse
                                     
                                 hitdattmp = squeeze(nanmean(hitdattmp,3));
                                 hitdat = cat(3,hitdat,hitdattmp);
-                           
+                                end
                             catch ME
                                 disp(ME)
                                 keyboard
                             end
                             clear tmpload
-                        end
+                            end
+                      
                         
                         erroridx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,SideOptloop{sideloopidx}),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')    
@@ -321,8 +323,9 @@ for midx = 1:nrMouse %For this mouse
                             try
                                 
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{erroridx(i)}),erroridx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{erroridx(i)},fullfgtr);
-                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                rm2tmp = ismember(tmpload.ctrials{erroridx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
                                 trialidx = tmpload.ctrials{erroridx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 errodattmp = nan(400,400,length(twidx),sum(rm3tmp),'single');
@@ -345,6 +348,8 @@ for midx = 1:nrMouse %For this mouse
                                 
                                 errodattmp = squeeze(nanmean(errodattmp,3));
                                 errordat = cat(3,errordat,errodattmp);
+                                end
+                                
                             catch ME
                                 disp(ME)
                                 keyboard

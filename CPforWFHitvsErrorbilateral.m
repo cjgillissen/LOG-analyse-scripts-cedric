@@ -103,7 +103,10 @@ for midx = 1:nrMouse %For this mouse
     newroiscount = 1;
     mouse = miceopt{midx};
     mousecount = mousecount+1
-    referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+     try referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFile.bmp')));
+    catch
+        referenceimage = uint8(imread(fullfile(StorePath,mouse,'\RefFilepRF.bmp')));
+    end
     xpix = newsize(1);
     ypix = newsize(2);
     %Load Alan Brain model
@@ -275,8 +278,9 @@ for midx = 1:nrMouse %For this mouse
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(hitidx(i)) '.mat'])).name));
                             try
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{hitidx(i)}),hitidx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
-                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                rm2tmp = ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
                                 trialidx = tmpload.ctrials{hitidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 
@@ -289,6 +293,8 @@ for midx = 1:nrMouse %For this mouse
                                 end
                                 hitdattmp = squeeze(nanmean(hitdattmp,3));
                                 hitdat = cat(3,hitdat,hitdattmp);
+                                end
+                                
                            
                             catch ME
                                 disp(ME)
@@ -306,8 +312,9 @@ for midx = 1:nrMouse %For this mouse
                             try
                                 
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{erroridx(i)}),erroridx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{erroridx(i)},fullfgtr);
-                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                rm2tmp = ismember(tmpload.ctrials{erroridx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
                                 trialidx = tmpload.ctrials{erroridx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 errodattmp = nan(400,400,length(twidx),sum(rm3tmp),'single');
@@ -322,6 +329,8 @@ for midx = 1:nrMouse %For this mouse
                                 end
                                 errodattmp = squeeze(nanmean(errodattmp,3));
                                 errordat = cat(3,errordat,errodattmp);
+                                end
+                                
                             catch ME
                                 disp(ME)
                                 keyboard
@@ -391,14 +400,16 @@ for midx = 1:nrMouse %For this mouse
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
                    newauc(aucform) = smooth2a(tmpcp,2,2);
-                   h =imagesc(reshape(newauc,xpix,ypix),cpimrange);
+                   quantvallower = quantile(abs(newauc),0.05);
+                   quantvalhigher = quantile(abs(newauc),0.95);
+                   h =imagesc(reshape(newauc,xpix,ypix),[quantvallower quantvalhigher]);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
                    colormap(ActSupColorMap)
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities per Pixel bilateral' mouse])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Choice Probabilities Error vs Hits bilateral ' mouse])
                    Perf{midx,id,twid}.CP = newauc;
                    Perf{midx,id,twid}.nrerror = L1;
                    Perf{midx,id,twid}.nrhit = L2;
