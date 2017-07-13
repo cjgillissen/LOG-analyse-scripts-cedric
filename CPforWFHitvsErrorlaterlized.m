@@ -330,7 +330,7 @@ for midx = 1:nrMouse %For this mouse
                                 %bilineair interpolation is equivalent to
                                 %binning 
                                 resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
-                                
+                                % make exception for empty files !!!!~!@@@#
                                 if ~any(TW{twid}<0)
                                 for j = 1:100:newsize(1)
                                     tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
