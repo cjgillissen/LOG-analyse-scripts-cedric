@@ -15,6 +15,7 @@ scalefct = 0.5;
 cpimrange = [-0.5 1];
 ReactOptloop = {'Hit','Error'};
 
+normalizemethod = {'zscore'} % {'substractavg'} {'None'}
 
 if strcmp(Stim2Check,'FGTask')
     basel = [-250 -50];
@@ -307,8 +308,9 @@ for midx = 1:nrMouse %For this mouse
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(leftidx(i)) '.mat'])).name));
                             try
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{leftidx(i)}),leftidx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{leftidx(i)},fullfgtr);
-                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                rm2tmp = ismember(tmpload.ctrials{leftidx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
                                 trialidx = tmpload.ctrials{leftidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 
@@ -324,18 +326,21 @@ for midx = 1:nrMouse %For this mouse
                                     
                                 for j = 1:100:newsize(1)
                                     tmpnw = single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
-                                    leftdattmp(j:j+99,:,:,:) = imgaussfilt(tmpnw(:,:,twidx,:),2);
+                                    leftdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
                                 end 
                                 end
-                                    
+                                end   
                                 leftdattmp = squeeze(nanmean(leftdattmp,3));
                                 leftdat = cat(3,leftdat,leftdattmp);
                            
                             catch ME
                                 disp(ME)
                                 keyboard
+                            
+                            clear tmpload
+                            clear leftdattmp
+
                             end
-%                             clear tmpload
                         end
                         
                         rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,ReactOptloop{loopreactionidx}),ConditionNamestmp,'UniformOutput',0)))& ~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0))));
@@ -347,8 +352,9 @@ for midx = 1:nrMouse %For this mouse
                             try
                                 
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{rightidx(i)}),rightidx(i))';
-                                rm2tmp = ~ismember(tmpload.ctrials{rightidx(i)},fullfgtr);
-                                rm3tmp = (rmtmp==1 | rm2tmp==1);
+                                rm2tmp = ismember(tmpload.ctrials{rightidx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                               if any(rm3tmp==1)
                                 trialidx = tmpload.ctrials{rightidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 rightdattmp = nan(400,400,length(twidx),sum(rm3tmp),'single');
@@ -364,24 +370,31 @@ for midx = 1:nrMouse %For this mouse
                                     tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
                                     rightdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
                                     end
-                                end
                                     
                                 rightdattmp = squeeze(nanmean(rightdattmp,3));
                                 rightdat = cat(3,rightdat,rightdattmp);
+                                end
+                               end
+                               
                             catch ME
                                 disp(ME)
                                 keyboard
                             end
                             clear tmpload
-                            clear leftdattmp
+                            clear rightdattmp
                         end
-                        
+                        end
                     end
+                
+                if strcmp(normalizemethod,'Zscore')
+                    rightdat = zscore(rightdat,0,3);
+                    leftdat = zscore(leftdat,0,3);
+                elseif strcmp(normalizemethod,'substractavg')
+                    meanright = nanmean(rightdat,3);
+                    rightdat = bsxfun(@minus,rightdat,repmat(meanright,[1,1,size(rightdat,3)])); %substract only the mean per pixel insrtead of zscoring
+                    meanleft = nanmean(leftdat,3);
+                    leftdat = bsxfun(@minus,leftdat,repmat(meanright,[1,1,size(leftdat,3)]));
                 end
-                
-                rightdat = zscore(rightdat,0,3);
-                leftdat = zscore(leftdat,0,3);
-                
                 
                 %Remove areas
                 throwawayareas = find(cellfun(@isempty,BrainModel{midx}.Model.Rnames));
