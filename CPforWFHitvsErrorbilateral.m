@@ -341,18 +341,7 @@ for midx = 1:nrMouse %For this mouse
                     end
                 end
                 
-                trainp = 0.9;
-                nleft = size(errordat,3);
-                nright =  size(hitdat,3);
-                
-                if nleft>nright
-                    tn = floor(trainp.*nright); %Number of trial in training set
-                    tt = nright-tn; %Number of trials in test set
-                else
-                    tn = floor(trainp.*nleft); %Number of trial in training set
-                    tt = nleft-tn; %Number of trials in test set
-                end
-                
+               
                 %Remove areas
                 throwawayareas = find(cellfun(@isempty,BrainModel{midx}.Model.Rnames));
                 throwawayareas = [throwawayareas; find(cellfun(@(X) ismember(X,{'OlfactoryBulb','fibrtracts','InfCol','SupColSens'}),BrainModel{midx}.Model.Rnames))];
@@ -381,12 +370,10 @@ for midx = 1:nrMouse %For this mouse
                     tmpupperbound = zeros(size(tmperror,2),1);
                  
                     %% compute CP for whole brain
-                    % how to get back to brainpixelssss???
-                   for pixidx = 1:size(tmperror,2)
-                       
-                    L1 = size(tmperror(:,pixidx),1);
-                    L2 = size(tmphit(:,pixidx),1);
-                    labels = [ones(L1,1);zeros(L2,1)];
+                     L1 = size(tmperror,1);
+                     L2 = size(tmphit,1);
+                     labels = [ones(L1,1);zeros(L2,1)];
+                   parfor (pixidx = 1:size(tmperror,2),4)
                     scores = [tmperror(:,pixidx);tmphit(:,pixidx)];
                     [~,~,~,AUC1] = perfcurve(labels,scores,1);
 %                   [~,~,~,AUC1] = perfcurve(labels,scores,0,'Nboot',500); % error is positive
@@ -400,8 +387,8 @@ for midx = 1:nrMouse %For this mouse
                    aucform(removenanpix') = 0;
                    newauc = nan(xpix*ypix,1);
                    newauc(aucform) = smooth2a(tmpcp,2,2);
-                   quantvallower = quantile(abs(newauc),0.05);
-                   quantvalhigher = quantile(abs(newauc),0.95);
+                   quantvallower = quantile(abs(newauc),0.01);
+                   quantvalhigher = quantile(abs(newauc),0.99);
                    h =imagesc(reshape(newauc,xpix,ypix),[quantvallower quantvalhigher]);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
