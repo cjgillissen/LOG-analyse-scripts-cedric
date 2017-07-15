@@ -12,10 +12,10 @@ contrastROIs = 0; %Contrast between conditions to determine ROI?
 EvokedActivityROI = 1;
 newsize = [400 400];
 scalefct = 0.5;
-cpimrange = [-0.5 1];
+cpimrange = [0 0.9];
 ReactOptloop = {'Hit','Error'};
 
-normalizemethod = {'zscore'} % {'substractavg'} {'None'}
+normalizemethod = {'Zscore'} % {'substractavg'} {'None'}
 
 if strcmp(Stim2Check,'FGTask')
     basel = [-250 -50];
@@ -141,10 +141,9 @@ for midx = 1:nrMouse %For this mouse
         for twid = 1:length(TW)
             for id = 1:length(trialtypes)
                 sessioncount = 0;
-                leftdat = [];
-                rightdat = [];
-             
-             for loopreactionidx = 1:length(ReactOptloop)     
+             for loopreactionidx = 1:length(ReactOptloop)
+                  leftdat = [];
+                  rightdat = [];
                 for didx = 1:size(logs,2) %Loop over days
                     if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
                         continue
@@ -388,7 +387,9 @@ for midx = 1:nrMouse %For this mouse
                 
                 if strcmp(normalizemethod,'Zscore')
                     rightdat = zscore(rightdat,0,3);
+                    rightdat(rightdat<-2.5|rightdat>2.5) = nan;
                     leftdat = zscore(leftdat,0,3);
+                    leftdat(leftdat<-2.5|leftdat>2.5) = nan;
                 elseif strcmp(normalizemethod,'substractavg')
                     meanright = nanmean(rightdat,3);
                     rightdat = bsxfun(@minus,rightdat,repmat(meanright,[1,1,size(rightdat,3)])); %substract only the mean per pixel insrtead of zscoring
@@ -419,7 +420,7 @@ for midx = 1:nrMouse %For this mouse
                     seedtmpLv1 = repmat(centerLV1,[1,1,size(rightdat,3)]);
                     leftv1seed(~seedtmpLv1) = nan;
                     leftv1seed = nanmean(reshape(leftv1seed,[size(leftv1seed,1)*size(leftv1seed,2),size(leftv1seed,3)]),1);
-                    corrvec = corr(leftv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)])');
+                    corrvec = corr(leftv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)])','rows','pairwise');
                     corrmapRIGHTstimLEFTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
                     
 %                   RIGHT V1 seed when STIM is LEFT
@@ -427,7 +428,7 @@ for midx = 1:nrMouse %For this mouse
                     seedtmpRv1 = repmat(centerRV1,[1,1,size(leftdat,3)]);
                     rightv1seed(~seedtmpRv1) = nan;
                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
-                    corrvec = corr(rightv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])');
+                    corrvec = corr(rightv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])','rows','pairwise');
                     corrmapLEFTstimRIGHTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
                     
 %                   LEFT V1 seed when STIM is LEFT
@@ -435,7 +436,7 @@ for midx = 1:nrMouse %For this mouse
                     seedtmpLv1 = repmat(centerLV1,[1,1,size(leftdat,3)]);
                     leftv1seed(~seedtmpLv1) = nan;
                     leftv1seed = nanmean(reshape(leftv1seed,[size(leftv1seed,1)*size(leftv1seed,2),size(leftv1seed,3)]),1);
-                    corrvec = corr(leftv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])');
+                    corrvec = corr(leftv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])','rows','pairwise');
                     corrmapLEFTstimLEFTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
                     
 %                   RIGHT V1 seed when STIM is RIGHT
@@ -443,7 +444,7 @@ for midx = 1:nrMouse %For this mouse
                     seedtmpRv1 = repmat(centerRV1,[1,1,size(rightdat,3)]);
                     rightv1seed(~seedtmpRv1) = nan;
                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
-                    corrvec = corr(rightv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)])');
+                    corrvec = corr(rightv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)]),'rows','pairwise');
                     corrmapRIGHTstimRIGHTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
                     
                     
@@ -451,7 +452,7 @@ for midx = 1:nrMouse %For this mouse
                    %RIGHTstimLEFTseed 
                    LEFTV1 = figure;
                    quantvaldffleftv1 = quantile(abs(corrmapRIGHTstimLEFTseed(:)),0.90);
-                   links =imagesc(corrmapRIGHTstimLEFTseed,[0 quantvaldffleftv1]);
+                   links =imagesc(corrmapRIGHTstimLEFTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
@@ -472,7 +473,7 @@ for midx = 1:nrMouse %For this mouse
                    %LEFTstimRIGHTseed
                    RIGHTV1 = figure;
                    quantvaldffrightv1 = quantile(abs(corrmapLEFTstimRIGHTseed(:)),0.90);
-                   rechts =imagesc(corrmapLEFTstimRIGHTseed,[0 quantvaldffrightv1]);
+                   rechts =imagesc(corrmapLEFTstimRIGHTseed,cpimrange);
                    hold on
                    scatter(BrainModel{midx}.Model.AllX.*scalefct,BrainModel{midx}.Model.AllY.*scalefct,'k.')
                    axis square
@@ -482,7 +483,7 @@ for midx = 1:nrMouse %For this mouse
                    h = colorbar;
                    ylabel(h,'Pearson correlation coefficient')
                    set(rechts,'AlphaData',~isnan(corrmapLEFTstimRIGHTseed));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'NC Leftstim RIGHT seed ' ReactOptloop{loopreactionidx}  mouse 'nrt=' num2str(size(leftdat,3))])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ','' ' trialtypes{id}, 'NC Leftstim RIGHT seed ' ReactOptloop{loopreactionidx}  mouse ' nrt=' num2str(size(leftdat,3))])
                    NCmat{midx,id,twid,loopreactionidx}.RIGHTV1 = corrmapLEFTstimRIGHTseed;
                    NCmat{midx,id,twid,loopreactionidx}.nrtRIGHTV1 = size(leftdat,3);
                   
