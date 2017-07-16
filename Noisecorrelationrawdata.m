@@ -370,10 +370,11 @@ for midx = 1:nrMouse %For this mouse
                                     rightdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
                                     end
                                     
-                                rightdattmp = squeeze(nanmean(rightdattmp,3));
-                                rightdat = cat(3,rightdat,rightdattmp);
+                                
                                 end
                                end
+                               rightdattmp = squeeze(nanmean(rightdattmp,3));
+                               rightdat = cat(3,rightdat,rightdattmp);
                                
                             catch ME
                                 disp(ME)
@@ -430,7 +431,7 @@ for midx = 1:nrMouse %For this mouse
                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
                     corrvec = corr(rightv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])','rows','pairwise');
                     corrmapLEFTstimRIGHTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
-                    
+                     
 %                   LEFT V1 seed when STIM is LEFT
                     leftv1seed = leftdat;
                     seedtmpLv1 = repmat(centerLV1,[1,1,size(leftdat,3)]);
@@ -439,13 +440,13 @@ for midx = 1:nrMouse %For this mouse
                     corrvec = corr(leftv1seed',reshape(leftdat,[size(leftdat,1)*size(leftdat,2),size(leftdat,3)])','rows','pairwise');
                     corrmapLEFTstimLEFTseed = reshape(corrvec,[size(leftdat,1),size(leftdat,2)]);
                     
-%                   RIGHT V1 seed when STIM is RIGHT
-                    rightv1seed = rightdat;
-                    seedtmpRv1 = repmat(centerRV1,[1,1,size(rightdat,3)]);
-                    rightv1seed(~seedtmpRv1) = nan;
-                    rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
-                    corrvec = corr(rightv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)]),'rows','pairwise');
-                    corrmapRIGHTstimRIGHTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
+% %                   RIGHT V1 seed when STIM is RIGHT
+%                     rightv1seed = rightdat;
+%                     seedtmpRv1 = repmat(centerRV1,[1,1,size(rightdat,3)]);
+%                     rightv1seed(~seedtmpRv1) = nan;
+%                     rightv1seed = nanmean(reshape(rightv1seed,[size(rightv1seed,1)*size(rightv1seed,2),size(rightv1seed,3)]),1);
+%                     corrvec = corr(rightv1seed',reshape(rightdat,[size(rightdat,1)*size(rightdat,2),size(rightdat,3)]),'rows','pairwise');
+%                     corrmapRIGHTstimRIGHTseed = reshape(corrvec,[size(rightdat,1),size(rightdat,2)]);
                     
                     
                     % make plot, average epr area.
