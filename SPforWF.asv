@@ -270,7 +270,7 @@ for midx = 1:nrMouse %For this mouse
                         baseidx = find(timeline>=basel(1) & timeline<=basel(2));
                         
                         % load in rawdata
-                        leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0))));
+                        leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
                             leftidx(ismember(leftidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
@@ -311,7 +311,7 @@ for midx = 1:nrMouse %For this mouse
                             clear tmpload
                         end
                         
-                        rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0))));
+                        rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
                             rightidx(ismember(rightidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
@@ -412,14 +412,14 @@ for midx = 1:nrMouse %For this mouse
                    colormap(ActSupColorMap)
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
-                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Stimulus Probabilities Left vs Right ' mouse])
+                   title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Stimulus Probabilities Error vs Hits bilateral ' mouse])
                    Perf{midx,id,twid}.CP = newauc;
-                   Perf{midx,id,twid}.nrright = L1;
-                   Perf{midx,id,twid}.nrleft = L2;
+                   Perf{midx,id,twid}.nrerror = L1;
+                   Perf{midx,id,twid}.nrhit = L2;
 %                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
 %                    Perf{midx,id,twid}.upperbound = tmpupperbound;
-                   disp(['SP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
-                   saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures SP',['SP LeftvsRight' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
+                   disp(['CP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
+                   saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures CP',['CP HvsE LandR' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                 
                    % Average cp per area. Also plot confidence bounds. !! 
                    
@@ -429,7 +429,7 @@ for midx = 1:nrMouse %For this mouse
             
         end
           
-          save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance SP' strjoin(trialtypes) mouse]),'Perfsp')
+          save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance CP' strjoin(trialtypes) mouse]),'Perf')
 
     end
 end
