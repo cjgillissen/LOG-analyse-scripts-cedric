@@ -395,7 +395,7 @@ for midx = 1:nrMouse %For this mouse
                     meanright = nanmean(rightdat,3);
                     rightdat = bsxfun(@minus,rightdat,repmat(meanright,[1,1,size(rightdat,3)])); %substract only the mean per pixel insrtead of zscoring
                     meanleft = nanmean(leftdat,3);
-                    leftdat = bsxfun(@minus,leftdat,repmat(meanright,[1,1,size(leftdat,3)]));
+                    leftdat = bsxfun(@minus,leftdat,repmat(meanleft,[1,1,size(leftdat,3)]));
                 end
                 
                 %Remove areas

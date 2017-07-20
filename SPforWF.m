@@ -1,4 +1,4 @@
-function CPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
+function SPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
 
 global UserQuestions
 paths = info.paths;
@@ -413,7 +413,7 @@ for midx = 1:nrMouse %For this mouse
                    colorbar
                    set(h,'AlphaData',~isnan(reshape(newauc,xpix,ypix)));
                    title([num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id}, 'Stimulus Probabilities Left vs Right ' mouse])
-                   Perf{midx,id,twid}.CP = newauc;
+                   Perf{midx,id,twid}.SP = newauc;
                    Perf{midx,id,twid}.nrright = L1;
                    Perf{midx,id,twid}.nrleft = L2;
 %                    Perf{midx,id,twid}.lowerbound = tmplowerbound;
@@ -429,7 +429,7 @@ for midx = 1:nrMouse %For this mouse
             
         end
           
-          save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance SP' strjoin(trialtypes) mouse]),'Perfsp')
+          save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance SP' strjoin(trialtypes) mouse]),'Perf')
 
     end
 end
