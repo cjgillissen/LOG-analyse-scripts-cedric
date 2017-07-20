@@ -9,6 +9,7 @@ TW = {basel,visint,vistw,Delayearlytw,Responstw,Delaylatetw};
 StorePath = '\\vcnin\mouse_working_memory\MainAnalysis\';
 xpix = 400;
 ypix = 400;
+scalefct = 0.5;
 %%
 avgcp = 1:length(TW);
 figure('name','Lineplot average cp per area per tw')
@@ -26,7 +27,7 @@ for midx = 1:length(miceopt)
         masktmp = zeros(xpix,ypix);
 %         mask = [];r
         for roi2dx = 1:length(Borders)
-            mask = poly2mask(Borders{roi2dx}(:,1),Borders{roi2dx}(:,2),xpix,ypix);
+            mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
             %Shrink to not have border effects
             mask = bwmorph(mask,'shrink',1);
             masktmp(mask)=roiidx;
