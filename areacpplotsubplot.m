@@ -10,11 +10,13 @@ StorePath = '\\vcnin\mouse_working_memory\MainAnalysis\';
 scalefct = 0.5;
 xpix = 400;
 ypix = 400;
+allmicetmp = cell(length(miceopt),length(TW));
 %%
 
 
-rgnames = {'V1','Vpor','Va','M1','M2'};
-regio2take = [11,13,25,38,40];
+% rgnames = {'V1','Vpor','Va','M1','M2'};
+% regio2take = 10:43;
+regio2take = 11;
 avgcp = 1:length(TW);
 figure('name','Lineplot average cp per area per tw')
 avgtmp = nan(length(miceopt),length(TW),length(rgnames));
@@ -39,7 +41,7 @@ for midx = 1:length(miceopt)
             CP = reshape(CP,xpix,ypix);
             avgcp(twidx) = nanmean(CP(masktmp==roiidx));
             avgtmp(midx,twidx,roiidx) = nanmean(CP(masktmp==roiidx));
-
+            allmicetmp{midx,twidx} = CP;
         end
     subplot(3,2,midx)
     plot(1:length(TW),avgcp)
@@ -48,15 +50,24 @@ for midx = 1:length(miceopt)
     ylabel('AUC')
     hold on
     end
-legend(rgnames)
+legend(BrainModel{midx}.Model.Rnames{regio2take})
 end
 
 %% avg across mice
 % ciplot lower upper x
-avgmice = squeeze(nanmean(avgtmp,1));
-stdmice = squeeze(std(avgtmp));
-upperlim = avgmice+stdmice;
-lowerlim = avgmice-stdmice;
+% avgmice = squeeze(nanmean(avgtmp,1));
+% stdmice = squeeze(std(avgtmp));
+% upperlim = avgmice+stdmice;
+% lowerlim = avgmice-stdmice;
+
+
+avgmap = cellfun(nanmean,allmicetmp{
+test = nanmean(avgmap,1)
+
+
+
+
+
 
 
 figure;
@@ -66,6 +77,20 @@ hold on
   hold on
 
 plot(lowerlim)
+
+% Examples
+y=randn(30,80); x=1:size(y,2);
+shadedErrorBar(x,mean(y,1),std(y),'g');
+shadedErrorBar(x,y,{@median,@std},{'r-o','markerfacecolor','r'});    
+shadedErrorBar([],y,{@median,@std},{'r-o','markerfacecolor','r'});    
+
+% Overlay two transparent lines
+y=randn(30,80)*10; x=(1:size(y,2))-40;
+shadedErrorBar(x,y,{@mean,@std},'-r',1); 
+hold on
+y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
+shadedErrorBar(x,y,{@mean,@std},'-b',1); 
+hold off
 
 
 
