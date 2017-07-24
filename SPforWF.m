@@ -115,8 +115,10 @@ for midx = 1:nrMouse %For this mouse
         for twid = 1:length(TW)
             for id = 1:length(trialtypes)
                 sessioncount = 0;
-                leftdat = [];
-                rightdat = [];
+                lefthitdat = [];
+                lefterrordat = [];
+                righthitdat = [];
+                righterrordat = [];
                 for didx = 1:size(logs,2) %Loop over days
                     if sum(~cellfun(@isempty, {logs{midx,didx,:}})) < 1 %If not recorded that day, skip
                         continue
@@ -270,18 +272,18 @@ for midx = 1:nrMouse %For this mouse
                         baseidx = find(timeline>=basel(1) & timeline<=basel(2));
                         
                         % load in rawdata
-                        leftidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0))));
+                        lefthitidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0)))&~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
-                            leftidx(ismember(leftidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
+                            lefthitidx(ismember(lefthitidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
-                        for i = 1:length(leftidx)
-                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(leftidx(i)) '.mat'])).name));
+                        for i = 1:length(lefthitidx)
+                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(lefthitidx(i)) '.mat'])).name));
                             try
-                                rmtmp = ~removeidx(1:length(tmpload.ctrials{leftidx(i)}),leftidx(i))';
-                                rm2tmp = ismember(tmpload.ctrials{leftidx(i)},fullfgtr);
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{lefthitidx(i)}),lefthitidx(i))';
+                                rm2tmp = ismember(tmpload.ctrials{lefthitidx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 & rm2tmp==1);
                                 if any(rm3tmp==1)
-                                trialidx = tmpload.ctrials{leftidx(i)};
+                                trialidx = tmpload.ctrials{lefthitidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 
                                 leftdattmp =  zeros(400,400,length(twidx),sum(rm3tmp),'single');
@@ -300,7 +302,7 @@ for midx = 1:nrMouse %For this mouse
                                 end
                              
                                 leftdattmp = squeeze(nanmean(leftdattmp,3));
-                                leftdat = cat(3,leftdat,leftdattmp);
+                                lefthitdat = cat(3,lefthitdat,leftdattmp);
                                 end
                                 
                            
@@ -311,19 +313,61 @@ for midx = 1:nrMouse %For this mouse
                             clear tmpload
                         end
                         
-                        rightidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0))));
+                        % load in rawdata
+                        lefterroridx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'left'),ConditionNamestmp,'UniformOutput',0)))&~cellfun(@isempty,(cellfun(@(X) strfind(X,'Error'),ConditionNamestmp,'UniformOutput',0))));
                         if strcmp(Stim2Check,'DelayedOriTuningSound')
-                            rightidx(ismember(rightidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
+                            lefterroridx(ismember(lefterroridx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
                         end
-                        for i = 1:length(rightidx)
-                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(rightidx(i)) '.mat'])).name));
+                        for i = 1:length(lefterroridx)
+                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(lefterroridx(i)) '.mat'])).name));
                             try
-                                
-                                rmtmp = ~removeidx(1:length(tmpload.ctrials{rightidx(i)}),rightidx(i))';
-                                rm2tmp = ismember(tmpload.ctrials{rightidx(i)},fullfgtr);
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{lefterroridx(i)}),lefterroridx(i))';
+                                rm2tmp = ismember(tmpload.ctrials{lefterroridx(i)},fullfgtr);
                                 rm3tmp = (rmtmp==1 & rm2tmp==1);
                                 if any(rm3tmp==1)
-                                trialidx = tmpload.ctrials{rightidx(i)};
+                                trialidx = tmpload.ctrials{lefterroridx(i)};
+                                trialidx = trialidx(rm3tmp);
+                                
+                                leftdattmp =  zeros(400,400,length(twidx),sum(rm3tmp),'single');
+                                resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
+
+                                if ~any(TW{twid}<0)
+                                    for j = 1:100:newsize(1)
+                                    tmpnw = single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
+                                    leftdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
+                                    end
+                                else
+                                    for j = 1:100:newsize(1)
+                                    tmpnw = single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
+                                    leftdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
+                                    end
+                                end
+                             
+                                leftdattmp = squeeze(nanmean(leftdattmp,3));
+                                lefterrordat = cat(3,lefterrordat,leftdattmp);
+                                end
+                                
+                           
+                            catch ME
+                                disp(ME)
+                                keyboard
+                            end
+                            clear tmpload
+                        end
+                        
+                        righthitidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0)))~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0))));
+                        if strcmp(Stim2Check,'DelayedOriTuningSound')
+                            righthitidx(ismember(righthitidx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
+                        end
+                        for i = 1:length(righthitidx)
+                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(righthitidx(i)) '.mat'])).name));
+                            try
+                                
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{righthitidx(i)}),righthitidx(i))';
+                                rm2tmp = ismember(tmpload.ctrials{righthitidx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
+                                trialidx = tmpload.ctrials{righthitidx(i)};
                                 trialidx = trialidx(rm3tmp);
                                 rigtdattmp = nan(400,400,length(twidx),sum(rm3tmp),'single');
                                 
@@ -344,7 +388,51 @@ for midx = 1:nrMouse %For this mouse
                                 end
                                 
                                 rigtdattmp = squeeze(nanmean(rigtdattmp,3));
-                                rightdat = cat(3,rightdat,rigtdattmp);
+                                righthitdat = cat(3,righthitdat,rigtdattmp);
+                                end
+                                
+                            catch ME
+                                disp(ME)
+                                keyboard
+                            end
+                            clear tmpload
+                            clear leftdattmp
+                        end
+                        
+                        righterroridx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'right'),ConditionNamestmp,'UniformOutput',0))));
+                        if strcmp(Stim2Check,'DelayedOriTuningSound')
+                            righterroridx(ismember(righterroridx,find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'500'),ConditionNamestmp,'UniformOutput',0)))))) = [];
+                        end
+                        for i = 1:length(righterroridx)
+                            tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(righterroridx(i)) '.mat'])).name));
+                            try
+                                
+                                rmtmp = ~removeidx(1:length(tmpload.ctrials{righterroridx(i)}),righterroridx(i))';
+                                rm2tmp = ismember(tmpload.ctrials{righterroridx(i)},fullfgtr);
+                                rm3tmp = (rmtmp==1 & rm2tmp==1);
+                                if any(rm3tmp==1)
+                                trialidx = tmpload.ctrials{righterroridx(i)};
+                                trialidx = trialidx(rm3tmp);
+                                rigtdattmp = nan(400,400,length(twidx),sum(rm3tmp),'single');
+                                
+                                %bilineair interpolation is equivalent to
+                                %binning 
+                                resizedconddata = imresize(tmpload.conddata(:,:,:,rm3tmp),newsize,'bilinear');
+                                
+                                if ~any(TW{twid}<0)
+                                    for j = 1:100:newsize(1)
+                                        tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
+                                        rigtdattmp(j:j+99,:,:,:) = (tmpnw(:,:,twidx,:)-repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]))./repmat(nanmean(tmpnw(:,:,baseidx,:),3),[1,1,length(twidx),1]);
+                                    end
+                                else
+                                    for j = 1:100:newsize(1)
+                                        tmpnw =  single(resizedconddata(j:j+99,:,:,:))./permute(repmat(BASELINEMAT(j:j+99,:,trialidx),[1,1,1,size(resizedconddata,3)]),[1,2,4,3]);
+                                        rigtdattmp(j:j+99,:,:,:) = tmpnw(:,:,twidx,:);
+                                    end
+                                end
+                                
+                                rigtdattmp = squeeze(nanmean(rigtdattmp,3));
+                                righterrordat = cat(3,righterrordat,rigtdattmp);
                                 end
                                 
                             catch ME

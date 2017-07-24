@@ -59,15 +59,21 @@ end
 % stdmice = squeeze(std(avgtmp));
 % upperlim = avgmice+stdmice;
 % lowerlim = avgmice-stdmice;
+% 
+% 
+% avgmap = cellfun(nanmean,allmicetmp{
+% test = nanmean(avgmap,1)
 
 
-avgmap = cellfun(nanmean,allmicetmp{
-test = nanmean(avgmap,1)
+avgallmice = squeeze(nanmean(avgtmp,1));
+stdallmice = std(avgtmp,1,1);
+collorross = {'g','r','b','y','m'};
 
-
-
-
-
+figure
+for i = 1:size(avgallmice,2)
+shadedErrorBar(1:size(avgallmice,1),avgallmice(:,i),std(avgtmp(:,:,i),1,1),collorross{i},1)
+hold on
+end
 
 
 figure;
