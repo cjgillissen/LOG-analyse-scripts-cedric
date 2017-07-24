@@ -15,42 +15,57 @@ allmicetmp = cell(length(miceopt),length(TW));
 
 
 % rgnames = {'V1','Vpor','Va','M1','M2'};
-% regio2take = 10:43;
-regio2take = 11;
+regio2take = 10:43;
+% regio2take = 11;
 avgcp = 1:length(TW);
-figure('name','Lineplot average cp per area per tw')
-avgtmp = nan(length(miceopt),length(TW),length(rgnames));
+plotfig =figure('name','Lineplot average cp per area per tw');
+imagescfig = figure('name' ,'ImagescFig average cp per area per tw');
+mask2 = cell(length(miceopt),length(TW));
+avgtmp = nan(length(miceopt),length(TW),length(regio2take));
+mask2 = cellfun(@(X) nan(xpix,ypix),mask2,'UniformOutput',0);
+
 for midx = 1:length(miceopt)
     mouse = miceopt{midx};
     BrainModel{midx} = load(fullfile(StorePath,mouse,'brainareamodel.mat'));
     masktmp = zeros(xpix,ypix);
-        for roiidx = 1:length(regio2take)
-            disp(['Mouse ' num2str(midx) ', region ' num2str(roiidx) ' of ' num2str(length(regio2take))])
-            Borders = BrainModel{midx}.Model.Boundaries{regio2take(roiidx)};
-            masktmp = zeros(xpix,ypix);
+    
+    
+    
+    for roiidx = 1:length(regio2take)
+        disp(['Mouse ' num2str(midx) ', region ' num2str(roiidx) ' of ' num2str(length(regio2take))])
+        Borders = BrainModel{midx}.Model.Boundaries{regio2take(roiidx)};
+        masktmp = zeros(xpix,ypix);
         %         mask = [];r
-            for roi2dx = 1:length(Borders)
-                mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
-                %Shrink to not have border effects
-                mask = bwmorph(mask,'shrink',1);
-                masktmp(mask)=roiidx;
-            end
-
+        for roi2dx = 1:length(Borders)
+            mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
+            %Shrink to not have border effects
+            mask = bwmorph(mask,'shrink',1);
+            masktmp(mask)=roiidx;
+        end
+        
         for twidx = 1:length(TW)
             CP = Perf{midx,1,twidx}.CP;
             CP = reshape(CP,xpix,ypix);
             avgcp(twidx) = nanmean(CP(masktmp==roiidx));
             avgtmp(midx,twidx,roiidx) = nanmean(CP(masktmp==roiidx));
             allmicetmp{midx,twidx} = CP;
+            mask2{midx,twidx}(masktmp==roiidx) = avgtmp(midx,twidx,roiidx);
         end
-    subplot(3,2,midx)
-    plot(1:length(TW),avgcp)
-    title([miceopt{midx}])
-    xlabel('Timewindow, fix xticks')
-    ylabel('AUC')
-    hold on
+        figure(plotfig)
+        subplot(3,2,midx)
+        plot(1:length(TW),avgcp)
+        title([miceopt{midx}])
+        xlabel('Timewindow, fix xticks')
+        ylabel('AUC')
+        hold on
     end
 legend(BrainModel{midx}.Model.Rnames{regio2take})
+
+figure(imagescfig);
+for twidx = 1:length(TW)
+    subplot(length(miceopt),length(TW),(midx-1)*length(TW)+twidx);
+    imagesc(mask2{midx,twidx},[0.3 0.7])
+end
 end
 
 %% avg across mice
