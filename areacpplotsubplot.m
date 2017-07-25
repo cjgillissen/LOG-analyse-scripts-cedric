@@ -30,7 +30,6 @@ for midx = 1:length(miceopt)
     masktmp = zeros(xpix,ypix);
     
     
-    
     for roiidx = 1:length(regio2take)
         disp(['Mouse ' num2str(midx) ', region ' num2str(roiidx) ' of ' num2str(length(regio2take))])
         Borders = BrainModel{midx}.Model.Boundaries{regio2take(roiidx)};
@@ -40,16 +39,18 @@ for midx = 1:length(miceopt)
             mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
             %Shrink to not have border effects
             mask = bwmorph(mask,'shrink',1);
-            masktmp(mask)=roiidx;
-        end
+            masktmp(mask)=roiidx+roi2dx;
+        
         
         for twidx = 1:length(TW)
             CP = Perf{midx,1,twidx}.CP;
             CP = reshape(CP,xpix,ypix);
-            avgcp(twidx) = nanmean(CP(masktmp==roiidx));
-            avgtmp(midx,twidx,roiidx) = nanmean(CP(masktmp==roiidx));
+            avgcp(twidx) = nanmean(CP(masktmp==roiidx+roi2dx));
+            avgtmp(midx,twidx,roiidx+roi2dx) = nanmean(CP(masktmp==(roiidx+roi2dx)));
             allmicetmp{midx,twidx} = CP;
-            mask2{midx,twidx}(masktmp==roiidx) = avgtmp(midx,twidx,roiidx);
+            mask2{midx,twidx}(masktmp==(roiidx+roi2dx)) = avgtmp(midx,twidx,roiidx+roi2dx);
+        end
+        
         end
         figure(plotfig)
         subplot(3,2,midx)
@@ -65,6 +66,52 @@ figure(imagescfig);
 for twidx = 1:length(TW)
     subplot(length(miceopt),length(TW),(midx-1)*length(TW)+twidx);
     imagesc(mask2{midx,twidx},[0.3 0.7])
+    
+    % plot bargraph with errors
+    
+        hf = figure('Position', [100 100 550 400]);
+
+        Y = [ 6 14;
+             17 12];
+        E = [ 3  1;
+              5  2];
+
+        C = [
+            0.90    0.55    0.55
+            0.62    0.76    0.84
+            0.89    0.10    0.11
+            0.12    0.47    0.70
+            ];
+        C = reshape(C, [2 2 3]);
+
+        P = nan(numel(Y), numel(Y));
+        P(1,2) = 0.04;
+        P(1,3) = 0.004;
+        P(2,4) = 0.10;
+        P(3,4) = 0.10;
+        % Make P symmetric, by copying the upper triangle onto the lower triangle
+        PT = P';
+        lidx = tril(true(size(P)), -1);
+        P(lidx) = PT(lidx);
+
+        superbar(Y, 'E', E, 'P', P, 'BarFaceColor', C, 'Orientation', 'v', ...
+            'ErrorbarStyle', 'T', 'PLineOffset', 3);
+
+        % Need to change fontsize
+
+        xlim([0.5 2.5]);
+        ylim([0 32]);
+
+        set(gca, 'XTick', []); % place vector
+%         set(gca, 'XTick', [1 2])
+%         set(gca, 'XTickLabel', {'Model1' 'Model2'})
+        
+        set(gca, 'YTick', []);
+
+  
+    
+    
+    
 end
 end
 
@@ -110,7 +157,7 @@ y=randn(30,80)*10; x=(1:size(y,2))-40;
 shadedErrorBar(x,y,{@mean,@std},'-r',1); 
 hold on
 y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
-shadedErrorBar(x,y,{@mean,@std},'-b',1); 
+shadedErrorBar(x,y,{@mean,@std},'-b',1);   
 hold off
 
 
