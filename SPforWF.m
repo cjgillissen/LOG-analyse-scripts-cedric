@@ -456,21 +456,37 @@ for midx = 1:nrMouse %For this mouse
                     end
                 end
                 
-                
                 %% Resampling of reactions per side
+                % resample across left vs right
                 
-                if size(righthitdat,3)>size(righterrordat,3)
-                   rightdat = cat(3,righterrordat,righthitdat(:,:,randperm(size(righthitdat,3),size(righterrordat,3))));
-                elseif size(righterrordat,3)>size(righthitdat,3)
-                   rightdat = cat(3,righthitdat,righterrordat(:,:,randperm(size(righterrordat,3),size(righthitdat,3))));
+                if takeequalsample == 1
+                    if size(righthitdat,3)>size(righterrordat,3)
+                       rightdat = cat(3,righterrordat,righthitdat(:,:,randperm(size(righthitdat,3),size(righterrordat,3))));
+                    elseif size(righterrordat,3)>size(righthitdat,3)
+                       rightdat = cat(3,righthitdat,righterrordat(:,:,randperm(size(righterrordat,3),size(righthitdat,3))));
+                    end
+
+                    if size(lefthitdat,3)>size(lefterrordat,3)
+                        leftdat = cat(3,lefterrordat,lefthitdat(:,:,randperm(size(lefthitdat,3),size(lefterrordat,3))));
+                    elseif size(lefterrordat,3)>size(lefthitdat,3)
+                        leftdat = cat(3,lefthitdat,lefterrordat(:,:,randperm(size(lefterrordat,3),size(lefthitdat,3))));
+                    end
+                % resample every condition
+                elseif takeequalsample == 2
+                    
+                    minelement = min([size(righthitdat,3) size(righterrordat,3) size(lefthitdat,3) size(lefterrordat,3));
+                    righterrordat = righterrordat(:,:,randperm(righterrordat,minelement));
+                    righthitdat = righthitdat(:,:,randperm(righthitdat,minelement));
+                    rightdat = cat(3,righterrordat,righthitdat);
+                    lefterrordat = lefterrordat(:,:,randperm(lefterrrodat,minelement));
+                    lefthitdat = lefthitdat(:,:,randperm(lefthitdat,minelement));
+                    leftdat = cat(3,lefterrordat,lefthitdat);
+                
+                elseif takeequalsample ==0
+                    rightdat = cat(3,righterrordat,righthitdat);
+                    leftdat = cat(3,lefterrordat,lefthitdat);
                 end
                 
-                if size(lefthitdat,3)>size(lefterrordat,3)
-                    leftdat = cat(3,lefterrordat,lefthitdat(:,:,randperm(size(lefthitdat,3),size(lefterrordat,3))));
-                elseif size(lefterrordat,3)>size(lefthitdat,3)
-                    leftdat = cat(3,lefthitdat,lefterrordat(:,:,randperm(size(lefterrordat,3),size(lefthitdat,3))));
-                end
-            
                 %Remove areas 
                 throwawayareas = find(cellfun(@isempty,BrainModel{midx}.Model.Rnames));
                 throwawayareas = [throwawayareas; find(cellfun(@(X) ismember(X,{'OlfactoryBulb','fibrtracts','InfCol','SupColSens'}),BrainModel{midx}.Model.Rnames))];
@@ -535,8 +551,6 @@ for midx = 1:nrMouse %For this mouse
 %                    Perf{midx,id,twid}.upperbound = tmpupperbound;
                    disp(['SP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
                    saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures SP',['SP LeftvsRight' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
-                
-                   % Average cp per area. Also plot confidence bounds. !! 
                    
                 end
                 

@@ -495,7 +495,7 @@ title('superbar');
 
 %% ... parameters of the error bar can be set - cap width
 cla;
-superbar(Y, 'E', E, 'ErrorbarStyle', 'T', 'ErrorbarRelativeWidth', 0.8);
+superbar(Y, 'E', E, 'ErrorbarStyle', '', 'ErrorbarRelativeWidth', 0.8);
 
 
 %% ========================================================================

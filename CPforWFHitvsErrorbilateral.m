@@ -4,7 +4,8 @@ global UserQuestions
 paths = info.paths;
 logs = info.logs;
 nrMouse = length(miceopt);
-
+biasremoval = 1;
+biaswindow = 15;
 %% USER INPUT
 nback = 20;
 createvideosandfigurespermouse =0;
@@ -268,6 +269,11 @@ for midx = 1:nrMouse %For this mouse
                         clear conddata
                         twidx = find(timeline>=TW{twid}(1)&timeline<=TW{twid}(2));
                         baseidx = find(timeline>=basel(1) & timeline<=basel(2));
+                        
+                        if biasremoval
+                            [~,biasmat] = extractbiasidx(LOG,ctrials,biaswindow);
+                            removeidx(abs(biasmat')>0.3)=1;
+                        end
                         
                         % load in rawdata
                         hitidx = find(~cellfun(@isempty,(cellfun(@(X) strfind(X,'Hit'),ConditionNamestmp,'UniformOutput',0))));
