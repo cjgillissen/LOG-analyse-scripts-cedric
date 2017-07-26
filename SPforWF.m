@@ -537,7 +537,7 @@ for midx = 1:nrMouse %For this mouse
             
         end
           
-          save(fullfile('C:\Users\gillissen\Desktop\Figures CP',['Performance SP' strjoin(trialtypes) mouse]),'Perf')
+          save(fullfile('C:\Users\gillissen\Desktop\Figures SP',['Performance SP' strjoin(trialtypes) mouse]),'Perf')
 
     end
 end
