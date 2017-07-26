@@ -274,7 +274,7 @@ for midx = 1:nrMouse %For this mouse
                         baseidx = find(timeline>=basel(1) & timeline<=basel(2));
                         if removebias
                           [~,biasmat] = extractbiasidx(LOG,ctrials,biaswindow);
-                          removeidx(abs(biasmat')>0.3)=1;
+                          removeidx(abs(biasmat)>0.3)=1;
                         end
                         
                      

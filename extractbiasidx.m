@@ -1,4 +1,4 @@
-function [Per fMat,BiasMat] = extractbiasidx(log,timeline,ctrials,windowsize)
+function [PerfMat,BiasMat] = extractbiasidx(log,ctrials,windowsize)
 % calculates nback performance and bias (perfL - perfR)/(perfL+perfR)
 BiasMat = nan(length(ctrials),max(cellfun(@length,ctrials)));
 PerfMat = nan(length(ctrials),max(cellfun(@length,ctrials)),2); %2 for sides
