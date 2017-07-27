@@ -309,7 +309,7 @@ for midx = 1:nrMouse %For this mouse
                                     end
                                 end
                              
-                                leftdattmp = squeeze(nanmean(leftdattmp,3));
+                                leftdattmp = imgaussfilt(squeeze(nanmean(leftdattmp,3)),3);
                                 lefthitdat = cat(3,lefthitdat,leftdattmp);
                                 end
                                 
@@ -352,7 +352,7 @@ for midx = 1:nrMouse %For this mouse
                                     end
                                 end
                              
-                                leftdattmp = squeeze(nanmean(leftdattmp,3));
+                                leftdattmp = imgaussfilt(squeeze(nanmean(leftdattmp,3)),3);
                                 lefterrordat = cat(3,lefterrordat,leftdattmp);
                                 end
                                 
@@ -397,7 +397,7 @@ for midx = 1:nrMouse %For this mouse
                                     end
                                 end
                                 
-                                rigtdattmp = squeeze(nanmean(rigtdattmp,3));
+                                rigtdattmp = imgaussfilt(squeeze(nanmean(rigtdattmp,3)),3);
                                 righthitdat = cat(3,righthitdat,rigtdattmp);
                                 end
                                 
@@ -442,7 +442,7 @@ for midx = 1:nrMouse %For this mouse
                                     end
                                 end
                                 
-                                rigtdattmp = squeeze(nanmean(rigtdattmp,3));
+                                rigtdattmp = imgaussfilt(squeeze(nanmean(rigtdattmp,3)),3);
                                 righterrordat = cat(3,righterrordat,rigtdattmp);
                                 end
                                 
