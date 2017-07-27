@@ -475,11 +475,11 @@ for midx = 1:nrMouse %For this mouse
                 elseif resampling == 2
                     
                     minelement = min([size(righthitdat,3) size(righterrordat,3) size(lefthitdat,3) size(lefterrordat,3)]);
-                    righterrordat = righterrordat(:,:,randperm(righterrordat,minelement));
-                    righthitdat = righthitdat(:,:,randperm(righthitdat,minelement));
+                    righterrordat = righterrordat(:,:,randperm(size(righterrordat,3),minelement));
+                    righthitdat = righthitdat(:,:,randperm(size(righthitdat,3),minelement));
                     rightdat = cat(3,righterrordat,righthitdat);
-                    lefterrordat = lefterrordat(:,:,randperm(lefterrrodat,minelement));
-                    lefthitdat = lefthitdat(:,:,randperm(lefthitdat,minelement));
+                    lefterrordat = lefterrordat(:,:,randperm(size(lefterrrodat,3),minelement));
+                    lefthitdat = lefthitdat(:,:,randperm(size(lefthitdat,3),minelement));
                     leftdat = cat(3,lefterrordat,lefthitdat);
                 
                 elseif resampling ==0
@@ -560,7 +560,8 @@ for midx = 1:nrMouse %For this mouse
           
           save(fullfile('C:\Users\gillissen\Desktop\Figures SP',['Performance SP' strjoin(trialtypes) mouse]),'Perf')
 
-    end
+end
+
 end
 
 
