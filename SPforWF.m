@@ -478,7 +478,7 @@ for midx = 1:nrMouse %For this mouse
                     righterrordat = righterrordat(:,:,randperm(size(righterrordat,3),minelement));
                     righthitdat = righthitdat(:,:,randperm(size(righthitdat,3),minelement));
                     rightdat = cat(3,righterrordat,righthitdat);
-                    lefterrordat = lefterrordat(:,:,randperm(size(lefterrrodat,3),minelement));
+                    lefterrordat = lefterrordat(:,:,randperm(size(lefterrordat,3),minelement));
                     lefthitdat = lefthitdat(:,:,randperm(size(lefthitdat,3),minelement));
                     leftdat = cat(3,lefterrordat,lefthitdat);
                 

@@ -12,7 +12,7 @@ MappingDir = '\\vcnin\mouse_working_memory\pRF results\'
 takeequalsample = 0;
 smoothfact = 2;
 RedoAll = 0;
-resampling = 2;
+resampling = 2; % 0 no resampling, 1 resample conditions within left vs right, 2 resample all conditions
 trialtypes = {'1500'};
 %ACHTUNG: you need to install: https://sites.google.com/site/qingzongtseng/template-matching-ij-plugin#downloads
 
