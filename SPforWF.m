@@ -457,7 +457,7 @@ for midx = 1:nrMouse %For this mouse
                 end
                 
                 %% Resampling of reactions per side
-                % resample across left vs right
+                % resample inside left vs right
                 
                 if resampling == 1
                     if size(righthitdat,3)>size(righterrordat,3)

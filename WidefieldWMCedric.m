@@ -19,7 +19,7 @@ trialtypes = {'1500'};
 addpath(genpath(Scriptsdir))
 global UserQuestions %Defines whether gui's show up to ask what to do with existing datasets. If 0, existing datasets are used and not overwritten
 UserQuestions =0;
-
+ 
 %% Load in data --> 
 info = BuildInfo(miceopt,DataDirectory,storepath,Stim2Check); %Get all logs of WM-imaging sessions
 save(fullfile('C:\Users\gillissen\Desktop\Figures NC','sessionstruct'),'info')

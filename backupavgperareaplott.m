@@ -39,7 +39,7 @@ for midx = 1:length(miceopt)
         masktmpperside = zeros(xpix,ypix);
         masktmpbilateral = zeros(xpix,ypix);
         for twidx = 1:length(TW)
-            CP = Perf{midx,1,twidx}.CP;
+            CP = Perf{midx,1,twidx}.SP;
             CP = reshape(CP,xpix,ypix);
         
         for roi2dx = 1:length(Borders)
