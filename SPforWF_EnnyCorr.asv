@@ -586,16 +586,15 @@ for midx = 1:nrMouse %For this mouse
                         tmplowerbound = AUC1(2);
                         tmpupperbound = AUC1(3);
                         AUC  = AUC(1);
-                        
+                                   
+                                    
+                                    
+                      
+                    saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[miceopt{midx} BrainModel{midx}.Model.Rnames{regio2take(roiidx)} '_TimeCoursesLvsR.bmp']))
+                    saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[miceopt{midx} BrainModel{midx}.Model.Rnames{regio2take(roiidx)} '_TimeCoursesLvsR.fig']))
 
-                        Perf{midx,id,twid}.SP = newauc;
-                        Perf{midx,id,twid}.nrright = L1;
-                        Perf{midx,id,twid}.nrleft = L2;
-                        Perf{midx,id,twid}.lowerbound = tmplowerbound;
-                        Perf{midx,id,twid}.upperbound = tmpupperbound;
-                        disp(['SP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
-                        saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures SP',['SP LeftvsRight' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
-               end
+                    close(FF)
+                end
             end
 
                 
