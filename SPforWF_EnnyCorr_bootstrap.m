@@ -1,4 +1,4 @@
-function SPforWF(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample,resampling)
+function SPforWF_EnnyCorr_bootstrap(info,miceopt,StorePath,Stim2Check,baselinemethod,trialtypes,takeequalsample,resampling)
 
 global UserQuestions
 paths = info.paths;
@@ -273,8 +273,8 @@ for midx = 1:nrMouse %For this mouse
                     twidx = find(timeline>=TW{twid}(1)&timeline<=TW{twid}(2));
                     baseidx = find(timeline>=basel(1) & timeline<=basel(2));
                     if removebias
-                        [PerfMat,BiasMat,LickedBasedBias] = extractbiasidx(LOG,timeline,ctrials,biaswindow);
-                        removeidx(abs(LickBiasMat)'>0.5) = 1;
+                        [~,BiasMat] = extractbiasidx(LOG,ctrials,biaswindow);
+                        removeidx(abs(BiasMat)'>0.5) = 1;
                     end
                     
                     % load in rawdata 

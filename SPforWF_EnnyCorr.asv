@@ -510,7 +510,8 @@ for midx = 1:nrMouse %For this mouse
             removepixvec = reshape(removepix,[xpix*ypix,1]);
             
             %% ROC
-            if wholebrainana == 1
+            if wholebrainana == 1 % each pixel
+                
                 thistimer = tic;
                 tmpleft = reshape(leftdat,[xpix*ypix,size(leftdat,3)]);
                 tmpright = reshape(rightdat,[xpix*ypix,size(rightdat,3)]);
@@ -559,8 +560,9 @@ for midx = 1:nrMouse %For this mouse
                 saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures SP',['SP LeftvsRight' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
                 
             elseif wholebrainana ==2
-                
+                 thistimer = tic;
                  regio2take = find(~strcmp(BrainModel{midx}.Model.Rnames,''));
+                 count = 0;
                  for roiidx = 1:length(regio2take)
 
                     Borders = BrainModel{midx}.Model.Boundaries{regio2take(roiidx)};
@@ -568,7 +570,7 @@ for midx = 1:nrMouse %For this mouse
                         mask = poly2mask(Borders{roi2dx}(:,1),Borders{roi2dx}(:,2),xpix,ypix);
                         %Shrink to not have border effects
                         mask = bwmorph(mask,'shrink',1);
-                      
+                        count = count+1;
                         leftdat(~repmat(mask,[1,1,size(leftdat,3)]))=nan;
                         leftdat = nanmean(reshape(leftdat,[xpix*ypix,size(leftdat,3)]),1);
 
@@ -576,35 +578,27 @@ for midx = 1:nrMouse %For this mouse
                         rightdat = nanmean(reshape(rightdat,[xpix*ypix,size(rightdat,3)]),1);
                        
                         % ROC with confidence bounds
-                        
 
                         L1 = size(rightdat,2);
                         L2 = size(leftdat,2);
                         labels = [ones(L1,1);zeros(L2,1)];
                         scores = [rightdat;leftdat];
                         [~,~,~,AUC1] = perfcurve(labels,scores,1,'Nboot',1000);
+                        AUC  = AUC(1);
                         tmplowerbound = AUC1(2);
                         tmpupperbound = AUC1(3);
-                        AUC  = AUC(1);
-                                   
-                                    
-                                    
-                      
-                    saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[miceopt{midx} BrainModel{midx}.Model.Rnames{regio2take(roiidx)} '_TimeCoursesLvsR.bmp']))
-                    saveas(FF,fullfile(StorePath,'Figures',['Baseline' num2str(baselinemethod) '_eqsample' num2str(takeequalsample)],[miceopt{midx} BrainModel{midx}.Model.Rnames{regio2take(roiidx)} '_TimeCoursesLvsR.fig']))
-
-                    close(FF)
-                end
+                        
+                        Perf{midx,twid,count}.SP = newauc;
+                        Perf{midx,twid,count}.nrright = L1;
+                        Perf{midx,twid,count}.nrleft = L2;
+                        Perf{midx,twid,count}.lowerbound = tmplowerbound;
+                        Perf{midx,twid,count}.upperbound = tmpupperbound;
+                        Perf{midx,twidx,count}.rname = BrainModel{midx}.Model.Rnames{regio2take(roiidx)};
+                        disp(['SP analysis ' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) ', ' trialtypes{id} ' took ' num2str(toc(thistimer)./60) ' minutes'])
+                        saveas(Hwhole,fullfile('C:\Users\gillissen\Desktop\Figures SP',['SP LeftvsRight' num2str(TW{twid}(1)) '-' num2str(TW{twid}(2)) trialtypes{id} mouse]))
+               end
             end
-
-                
-                
-                
-                
-                
-                
             end
-            
         end
         
     end

@@ -45,6 +45,7 @@ ConditionAveragingScriptWF(info,miceopt,storepath,DataDirectory,Stim2Check,basel
 DifferencesCheck(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 2500],{'750','1500'},[-300 2500],takeequalsample)
 Noisecorrelationrawdata(info,miceopt,storepath,Stim2Check,baselinemethod,trialtypes,takeequalsample)
 SPforWF(info,miceopt,storepath,Stim2Check,baselinemethod,trialtypes,takeequalsample,resampling)
+SPforWF_EnnyCorr_bootstrap(info,miceopt,storepath,Stim2Check,baselinemethod,trialtypes,takeequalsample,resampling)
 
 %% MVPA 
 % MVPAPerSession(info,miceopt,storepath,DataDirectory,Stim2Check,baselinemethod,[-300 1500],{'1500'},[-300 2500],takeequalsample); 
