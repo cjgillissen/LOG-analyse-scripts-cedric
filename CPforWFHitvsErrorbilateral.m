@@ -282,6 +282,8 @@ for midx = 1:nrMouse %For this mouse
                         end
                         for i = 1:length(hitidx)
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(hitidx(i)) '.mat'])).name));
+                            tmpload.conddata = single(tmpload.conddata);
+                            tmpload.conddata(tmpload.conddata==0)=nan;
                             try
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{hitidx(i)}),hitidx(i))';
                                 rm2tmp = ismember(tmpload.ctrials{hitidx(i)},fullfgtr);
@@ -323,6 +325,8 @@ for midx = 1:nrMouse %For this mouse
                         end
                         for i = 1:length(erroridx)
                             tmpload = load(fullfile(StorePath,mouse,[mouse date],[mouse num2str(expnr)],rawdatfiles(strcmp({rawdatfiles(:).name},[mouse num2str(expnr) '_RawData_C' num2str(erroridx(i)) '.mat'])).name));
+                            tmpload.conddata = single(tmpload.conddata);
+                            tmpload.conddata(tmpload.conddata==0)=nan;
                             try
                                 
                                 rmtmp = ~removeidx(1:length(tmpload.ctrials{erroridx(i)}),erroridx(i))';

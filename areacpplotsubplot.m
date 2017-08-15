@@ -12,10 +12,10 @@ xpix = 400;
 ypix = 400;
 allmicetmp = cell(length(miceopt),length(TW));
 %%
-
+regio2take = [11,12,13,16,18,23,25,26,27,28,29,30,31,32,37,38,39,40];
 
 % rgnames = {'V1','Vpor','Va','M1','M2'};
-regio2take = 10:43;
+% regio2take = 10:43;
 % regio2take = 11;
 avgcp = 1:length(TW);
 plotfig =figure('name','Lineplot average cp per area per tw');
