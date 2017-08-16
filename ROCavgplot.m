@@ -41,11 +41,13 @@ for midx = 1:length(miceopt)
         masktmpperside = zeros(xpix,ypix);
         masktmpbilateral = zeros(xpix,ypix);
         for twidx = 1:length(TW)
-            CP = Perf{midx,1,twidx}.CP;
+            CP = Perf{midx,1,twidx}.SP;
             CP = reshape(CP,xpix,ypix);
 %             minntrials(midx) = min(Perf{midx,1,twidx}.nrright,Perf{midx,1,twidx}.nrleft);
-            nrhit = Perf{midx,1,twidx}.nrhit;
-            nrerror = Perf{midx,1,twidx}.nrerror;
+            nrleft = Perf{midx,1,twidx}.nrleft;
+            nrright = Perf{midx,1,twidx}.nrright;
+%             nrhit = Perf{midx,1,twidx}.nrhit;
+%             nrerror = Perf{midx,1,twidx}.nrerror;
         
         for roi2dx = 1:length(Borders)
             mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
@@ -68,7 +70,7 @@ for midx = 1:length(miceopt)
         figure(plotfig)
         subplot(3,2,midx)
         plot(1:length(TW),avgtmpbilateral(midx,:,roiidx),'color',C(roiidx,:),'linewidth',2)
-        title([miceopt{midx} ' nr hit ' num2str(nrhit) ', nr error ' num2str(nrerror)]) %num2str(minntrials(midx))
+        title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr right ' num2str(nrright)]) %num2str(minntrials(midx))
         xlabel('Timewindow, fix xticks')
         ylabel('AUC')
         hold on
