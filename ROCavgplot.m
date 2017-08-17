@@ -12,15 +12,15 @@ xpix = 400;
 ypix = 400;
 allmicetmp = cell(length(miceopt),length(TW));
 %%
-regio2take = [11,12,13,16,18,23,25,26,27,28,29,30,31,32,37,38,39,40];
+% regio2take = [11,12,13,16,18,23,25,26,27,28,29,30,31,32,37,38,39,40];
 % regio2take = [11,13,18,23,25,26,27,29,30,31,32,37,38,39];
 
 % rgnames = {'V1','Vpor','Va','M1','M2'};
-% regio2take = 10:43;
+regio2take = 10:43;
 % regio2take = 11;
 avgcp = 1:length(TW);
-plotfig =figure('name','Lineplot average cp per area per tw');
-imagescfig = figure('name' ,'ImagescFig average cp per area per tw');
+plotfig =figure('name','Lineplot average SP per area per tw');
+imagescfig = figure('name' ,'ImagescFig average SP per area per tw');
 SideAreaAVG = cell(length(miceopt),length(TW));
 avgtmpperside = nan(length(miceopt),length(TW),length(regio2take));
 SideAreaAVG = cellfun(@(X) nan(xpix,ypix),SideAreaAVG,'UniformOutput',0);
@@ -70,7 +70,7 @@ for midx = 1:length(miceopt)
         figure(plotfig)
         subplot(3,2,midx)
         plot(1:length(TW),avgtmpbilateral(midx,:,roiidx),'color',C(roiidx,:),'linewidth',2)
-        title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr right ' num2str(nrright)]) %num2str(minntrials(midx))
+        title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr nrright ' num2str(nrright)]) %num2str(minntrials(midx))
         xlabel('Timewindow, fix xticks')
         ylabel('AUC')
         hold on
@@ -101,97 +101,105 @@ end
 legend(BrainModel{midx}.Model.Rnames{regio2take})
 
 
-
-
-
-
-%% plot bargraph
-
-  for twidx = 1:length(TW)
-      
-
-
-
-
-    % plot bargraph with errors
-    
-
-        Y = [11 14 13;
-            15 12 16];
-        E = [ 3  4  2;
-            5  2  3];
-
-        % Plot with bar
-        subplot(1, 2, 1);
-        text(0.5, 0.5, 'not implemented', 'HorizontalAlignment', 'center');
-        title('bar');
-
-        % Plot with superbar
-        subplot(1, 2, 2);
-        superbar(Y, 'E', E);
-        title('superbar');
-
-        % Since one does not know the X locations of the individual bars, BAR and
-        % ERRORBAR can not be used together to add error bars to grouped bar plots.
-
-
-        set(gca, 'XTick', []); % place vector
-        %         set(gca, 'XTick', [1 2])
-        %         set(gca, 'XTickLabel', {'Model1' 'Model2'})
-
-        set(gca, 'YTick', []);
-
-  
-    
-    
- 
-
-%% avg across mice
-% ciplot lower upper x
-% avgmice = squeeze(nanmean(avgtmp,1));
-% stdmice = squeeze(std(avgtmp));
-% upperlim = avgmice+stdmice;
-% lowerlim = avgmice-stdmice;
-% 
-% 
-% avgmap = cellfun(nanmean,allmicetmp{
-% test = nanmean(avgmap,1)
-
- 
-avgallmice = squeeze(nanmean(avgtmpperside,1));
-stdallmice = std(avgtmpperside,1,1);
-collorross = {'g','r','b','y','m'};
-
+% just take a couple of regions
 figure
-for i = 1:size(avgallmice,2)
-shadedErrorBar(1:size(avgallmice,1),avgallmice(:,i),std(avgtmpperside(:,:,i),1,1),collorross{i},1)
-hold on
+regions = [11,25,26,38];
+reg = find(ismember(regio2take,regions));
+for regionidx = reg
+    errorbar(x,y(:,regionidx),errorrr(:,regionidx),'color',C(regionidx,:),'linewidth',3)
+    ylim([0.3,0.7])
+    hold on
 end
+legend(BrainModel{midx}.Model.Rnames{regions})
 
 
-figure;
-hold on
- areaidx = 1
-  ciplot(lowerlim(:,areaidx),upperlim(:,areaidx),avgmice(:,areaidx))
-  hold on
-
-plot(lowerlim)
-
-% Examples
-y=randn(30,80); x=1:size(y,2);
-shadedErrorBar(x,mean(y,1),std(y),'g');
-shadedErrorBar(x,y,{@median,@std},{'r-o','markerfacecolor','r'});    
-shadedErrorBar([],y,{@median,@std},{'r-o','markerfacecolor','r'});    
-
-% Overlay two transparent lines
-y=randn(30,80)*10; x=(1:size(y,2))-40;
-shadedErrorBar(x,y,{@mean,@std},'-r',1); 
-hold on
-y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
-shadedErrorBar(x,y,{@mean,@std},'-b',1);   
-hold off
-
-
+% 
+% %% plot bargraph
+% 
+%       
+% 
+% 
+% 
+% 
+%     % plot bargraph with errors
+%     
+% 
+%         Y = [11 14 13;
+%             15 12 16];
+%         E = [ 3  4  2;
+%             5  2  3];
+% 
+%         % Plot with bar
+%         subplot(1, 2, 1);
+%         text(0.5, 0.5, 'not implemented', 'HorizontalAlignment', 'center');
+%         title('bar');
+% 
+%         % Plot with superbar
+%         subplot(1, 2, 2);
+%         superbar(Y, 'E', E);
+%         title('superbar');
+% 
+%         % Since one does not know the X locations of the individual bars, BAR and
+%         % ERRORBAR can not be used together to add error bars to grouped bar plots.
+% 
+% 
+%         set(gca, 'XTick', []); % place vector
+%         %         set(gca, 'XTick', [1 2])
+%         %         set(gca, 'XTickLabel', {'Model1' 'Model2'})
+% 
+%         set(gca, 'YTick', []);
+% 
+%   
+%     
+%     
+%  
+% 
+% %% avg across mice
+% % ciplot lower upper x
+% % avgmice = squeeze(nanmean(avgtmp,1));
+% % stdmice = squeeze(std(avgtmp));
+% % upperlim = avgmice+stdmice;
+% % lowerlim = avgmice-stdmice;
+% % 
+% % 
+% % avgmap = cellfun(nanmean,allmicetmp{
+% % test = nanmean(avgmap,1)
+% 
+%  
+% avgallmice = squeeze(nanmean(avgtmpperside,1));
+% stdallmice = std(avgtmpperside,1,1);
+% collorross = {'g','r','b','y','m'};
+% 
+% figure
+% for i = 1:size(avgallmice,2)
+% shadedErrorBar(1:size(avgallmice,1),avgallmice(:,i),std(avgtmpperside(:,:,i),1,1),collorross{i},1)
+% hold on
+% end
+% 
+% 
+% figure;
+% hold on
+%  areaidx = 1
+%   ciplot(lowerlim(:,areaidx),upperlim(:,areaidx),avgmice(:,areaidx))
+%   hold on
+% 
+% plot(lowerlim)
+% 
+% % Examples
+% y=randn(30,80); x=1:size(y,2);
+% shadedErrorBar(x,mean(y,1),std(y),'g');
+% shadedErrorBar(x,y,{@median,@std},{'r-o','markerfacecolor','r'});    
+% shadedErrorBar([],y,{@median,@std},{'r-o','markerfacecolor','r'});    
+% 
+% % Overlay two transparent lines
+% y=randn(30,80)*10; x=(1:size(y,2))-40;
+% shadedErrorBar(x,y,{@mean,@std},'-r',1); 
+% hold on
+% y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
+% shadedErrorBar(x,y,{@mean,@std},'-b',1);   
+% hold off
+% 
+% 
 
 
 
