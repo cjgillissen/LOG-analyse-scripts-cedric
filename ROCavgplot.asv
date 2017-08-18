@@ -41,13 +41,13 @@ for midx = 1:length(miceopt)
         masktmpperside = zeros(xpix,ypix);
         masktmpbilateral = zeros(xpix,ypix);
         for twidx = 1:length(TW)
-            CP = Perf{midx,1,twidx}.CP;
+            CP = Perf{midx,1,twidx}.SP;
             CP = reshape(CP,xpix,ypix);
 %             minntrials(midx) = min(Perf{midx,1,twidx}.nrright,Perf{midx,1,twidx}.nrleft);
-%             nrleft = Perf{midx,1,twidx}.nrleft;
-%             nrright = Perf{midx,1,twidx}.nrright;
-            nrhit = Perf{midx,1,twidx}.nrhit;
-            nrerror = Perf{midx,1,twidx}.nrerror;
+            nrleft = Perf{midx,1,twidx}.nrleft;
+            nrright = Perf{midx,1,twidx}.nrright;
+%             nrhit = Perf{midx,1,twidx}.nrhit;
+%             nrerror = Perf{midx,1,twidx}.nrerror;
         
         for roi2dx = 1:length(Borders)
             mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
@@ -70,7 +70,7 @@ for midx = 1:length(miceopt)
         figure(plotfig)
         subplot(3,2,midx)
         plot(1:length(TW),avgtmpbilateral(midx,:,roiidx),'color',C(roiidx,:),'linewidth',2)
-        title([miceopt{midx} ' nr hit ' num2str(nrhit) ', nr nrerror ' num2str(nrerror)]) %num2str(minntrials(midx))
+        title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr nrright ' num2str(nrright)]) %num2str(minntrials(midx))
         xlabel('Timewindow, fix xticks')
         ylabel('AUC')
         hold on
@@ -117,23 +117,14 @@ legend(BrainModel{midx}.Model.Rnames{regions})
 yy = y(:,ismember(regio2take,regions));
 erry = errorrr(:,ismember(regio2take,regions));
 h = barwitherr(erry,yy);
-xlabel('TimeWindow')
-ylabel('AUC')
 legend(BrainModel{midx}.Model.Rnames{regions})
 ylim([0.3,0.7])
 set(gca,'XTickLabel',{num2str(TW{1}),num2str(TW{2}),num2str(TW{3}),num2str(TW{4}),num2str(TW{5}),num2str(TW{6})})
-set(h(1),'FaceColor',C(ismember(regio2take,regions(1)),:));
-set(h(2),'FaceColor',C(ismember(regio2take,regions(2)),:));
-set(h(3),'FaceColor',C(ismember(regio2take,regions(3)),:));
-set(h(4),'FaceColor',C(ismember(regio2take,regions(4)),:));
-
 xlim=get(gca,'xlim');
 hold on
 plot(xlim,[0.5,0.5])
 % set(gca,'FaceColor,',C(ismember(regio2take,regions)))
-
-
-
+set(h(1),'FaceColor',C(ismember(regio2take,regions),:));
 % 
 % %% plot bargraph
 % 
