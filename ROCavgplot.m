@@ -11,6 +11,58 @@ scalefct = 0.5;
 xpix = 400;
 ypix = 400;
 allmicetmp = cell(length(miceopt),length(TW));
+
+%% Colormap
+
+%Timelimit: Don't need data from time after this.
+%Make colormaps
+%Make colormaps
+posmap = fliplr([linspace(1,1,128);linspace(0,1,128);zeros(1,128)]);
+% blackmap = fliplr([linspace(0.2,0.40,12);linspace(0.2,0.40,12);linspace(0.2,0.40,12)]);
+negmap = fliplr([zeros(1,128);linspace(1,1,128);fliplr(linspace(0,1,128))]);
+PSCOREMAP = fliplr(cat(2,posmap,negmap))';
+blackval = round(0.95*size(PSCOREMAP,1)/2);
+blackrange = (size(PSCOREMAP,1)/2)-blackval:(size(PSCOREMAP,1)/2)+(blackval-1);
+blackmap = [fliplr(linspace(0,0.6,blackval)),linspace(0,0.6,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+PSCOREMAP(blackrange,:) = PSCOREMAP(blackrange,:).*repmat(blackmap,[3,1])';
+for i = 1:3
+    PSCOREMAP(:,i) = smooth(PSCOREMAP(:,i),5);
+end
+x = 1:256;
+y = 1:256;
+X = meshgrid(x,y);
+
+figure; imagesc(X)
+colormap(PSCOREMAP)
+
+ActSupColorMap = fliplr(cat(2,posmap,negmap))';
+
+
+%Mix in black in the middle
+blackval = 60;
+blackrange = (size(ActSupColorMap,1)/2)-blackval:(size(ActSupColorMap,1)/2)+(blackval-1);
+blackmap = [fliplr(linspace(0,1,blackval)),linspace(0,1,blackval)]; %make 0.6 or sth instead of 1 to have more 'abrupt' black to color
+
+%Smooth
+ActSupColorMap(blackrange,:) = ActSupColorMap(blackrange,:).*repmat(blackmap,[3,1])';
+for i = 1:3
+    ActSupColorMap(:,i) = smooth(ActSupColorMap(:,i),5);
+end
+
+x = 1:256;
+y = 1:256;
+X = meshgrid(x,y);
+
+figure; imagesc(X)
+colormap(ActSupColorMap)
+
+% Make line map
+%Green for hit, red for erros, black for misses
+greenmap = [zeros(1,5);linspace(0.5,1,5);zeros(1,5)];
+redmap = [linspace(0.5,1,5);zeros(1,5);zeros(1,5)];
+blackmap = [linspace(0,0.5,5);linspace(0,0.5,5);linspace(0,0.5,5)];
+yellowmap = [linspace(0.5,1,5);linspace(0.5,1,5);zeros(1,5)];
+LineMap = cat(3,fliplr(redmap),fliplr(greenmap),fliplr(blackmap),fliplr(yellowmap));
 %%
 % regio2take = [11,12,13,16,18,23,25,26,27,28,29,30,31,32,37,38,39,40];
 % regio2take = [11,13,18,23,25,26,27,29,30,31,32,37,38,39];
@@ -41,13 +93,13 @@ for midx = 1:length(miceopt)
         masktmpperside = zeros(xpix,ypix);
         masktmpbilateral = zeros(xpix,ypix);
         for twidx = 1:length(TW)
-            CP = Perf{midx,1,twidx}.CP;
+            CP = Perf{midx,1,twidx}.SP;
             CP = reshape(CP,xpix,ypix);
 %             minntrials(midx) = min(Perf{midx,1,twidx}.nrright,Perf{midx,1,twidx}.nrleft);
-%             nrleft = Perf{midx,1,twidx}.nrleft;
-%             nrright = Perf{midx,1,twidx}.nrright;
-            nrhit = Perf{midx,1,twidx}.nrhit;
-            nrerror = Perf{midx,1,twidx}.nrerror;
+            nrleft = Perf{midx,1,twidx}.nrleft;
+            nrright = Perf{midx,1,twidx}.nrright;
+%             nrhit = Perf{midx,1,twidx}.nrhit;
+%             nrerror = Perf{midx,1,twidx}.nrerror;
         
         for roi2dx = 1:length(Borders)
             mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
@@ -70,7 +122,7 @@ for midx = 1:length(miceopt)
         figure(plotfig)
         subplot(3,2,midx)
         plot(1:length(TW),avgtmpbilateral(midx,:,roiidx),'color',C(roiidx,:),'linewidth',2)
-        title([miceopt{midx} ' nr hit ' num2str(nrhit) ', nr nrerror ' num2str(nrerror)]) %num2str(minntrials(midx))
+        title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr nrright ' num2str(nrright)]) %num2str(minntrials(midx))
         xlabel('Timewindow, fix xticks')
         ylabel('AUC')
         hold on
@@ -82,10 +134,13 @@ legend(BrainModel{midx}.Model.Rnames{regio2take})
 figure(imagescfig);
 for twidx = 1:length(TW)
     subplot(length(miceopt),length(TW),(midx-1)*length(TW)+twidx);
-    imagesc(SideAreaAVG{midx,twidx},[0.3 0.7])
+    j = imagesc(SideAreaAVG{midx,twidx},[0.1 0.9]);
+    colormap(ActSupColorMap)
+    set(j,'AlphaData',~isnan(SideAreaAVG{midx,twidx}));
        
 end
 end
+hold off
 
 
 y = squeeze(nanmean(avgtmpbilateral,1));
@@ -99,6 +154,7 @@ for regionidx = 1:length(regio2take)
     hold on
 end
 legend(BrainModel{midx}.Model.Rnames{regio2take})
+hold off
 
 
 % just take a couple of regions
@@ -108,10 +164,13 @@ reg = find(ismember(regio2take,regions));
 for regionidx = reg
     errorbar(x,y(:,regionidx),errorrr(:,regionidx),'color',C(regionidx,:),'linewidth',3)
     ylim([0.3,0.7])
+    
     hold on
 end
+xlim=get(gca,'xlim');
+plot(xlim,[0.5,0.5])
 legend(BrainModel{midx}.Model.Rnames{regions})
-
+hold off
 
 %plot bargraph
 yy = y(:,ismember(regio2take,regions));
