@@ -1,4 +1,4 @@
-miceopt = {'Alladin','Chief','Esmeralda','Frey'}%%% %options for mice
+miceopt = {'Happy'}%%% %options for mice
 basel = [-300 -50];
 visint = [50 200];
 vistw = [200 500]; %FOR FG
@@ -65,10 +65,10 @@ yellowmap = [linspace(0.5,1,5);linspace(0.5,1,5);zeros(1,5)];
 LineMap = cat(3,fliplr(redmap),fliplr(greenmap),fliplr(blackmap),fliplr(yellowmap));
 %%
 % regio2take = [11,12,13,16,18,23,25,26,27,28,29,30,31,32,37,38,39,40];
-% regio2take = [11,13,18,23,25,26,27,29,30,31,32,37,38,39];
+regio2take = [11,13,18,23,25,26,27,29,30,31,32,37,38,39];
 
 % rgnames = {'V1','Vpor','Va','M1','M2'};
-regio2take = 10:43;
+% regio2take = 10:43;
 % regio2take = 11;
 avgcp = 1:length(TW);
 plotfig =figure('name','Lineplot average SP per area per tw');
@@ -122,9 +122,10 @@ for midx = 1:length(miceopt)
         figure(plotfig)
         subplot(3,2,midx)
         plot(1:length(TW),avgtmpbilateral(midx,:,roiidx),'color',C(roiidx,:),'linewidth',2)
+        ylim([0.2,0.8])
         title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr right ' num2str(nrright)]) %num2str(minntrials(midx))
-        xlabel('Timewindow, fix xticks')
-        ylabel('AUC')
+        xlabel('Timewindow')
+        ylabel('auROC')
         hold on
         
         
@@ -135,11 +136,16 @@ figure(imagescfig);
 for twidx = 1:length(TW)
     subplot(length(miceopt),length(TW),(midx-1)*length(TW)+twidx);
     j = imagesc(SideAreaAVG{midx,twidx},[0.1 0.9]);
+    axis off
     colormap(ActSupColorMap)
     set(j,'AlphaData',~isnan(SideAreaAVG{midx,twidx}));
-       
+    
 end
 end
+cc = colorbar;
+ylabel(cc, 'auROC')
+% currentFigure = gcf;
+% title(currentFigure.Children(end), 'LeftHit vs RightHit auROC Surface Plot');
 hold off
 
 
