@@ -1,4 +1,4 @@
-miceopt = {'Happy'}%%% %options for mice
+miceopt = {'Alladin','Chief','Esmeralda','Frey'} %Happy'}%%% %options for mice
 basel = [-300 -50];
 visint = [50 200];
 vistw = [200 500]; %FOR FG
@@ -93,13 +93,13 @@ for midx = 1:length(miceopt)
         masktmpperside = zeros(xpix,ypix);
         masktmpbilateral = zeros(xpix,ypix);
         for twidx = 1:length(TW)
-            CP = Perf{midx,1,twidx}.SP;
+            CP = Perf{midx,1,twidx}.CP;
             CP = reshape(CP,xpix,ypix);
 %             minntrials(midx) = min(Perf{midx,1,twidx}.nrright,Perf{midx,1,twidx}.nrleft);
-            nrleft = Perf{midx,1,twidx}.nrleft;
-            nrright = Perf{midx,1,twidx}.nrright;
-%             nrhit = Perf{midx,1,twidx}.nrhit;
-%             nrerror = Perf{midx,1,twidx}.nrerror;
+%             nrleft = Perf{midx,1,twidx}.nrleft;
+%             nrright = Perf{midx,1,twidx}.nrright;
+            nrhit = Perf{midx,1,twidx}.nrhit;
+            nrerror = Perf{midx,1,twidx}.nrerror;
         
         for roi2dx = 1:length(Borders)
             mask = poly2mask(Borders{roi2dx}(:,1).*scalefct,Borders{roi2dx}(:,2).*scalefct,xpix,ypix);
@@ -123,7 +123,7 @@ for midx = 1:length(miceopt)
         subplot(3,2,midx)
         plot(1:length(TW),avgtmpbilateral(midx,:,roiidx),'color',C(roiidx,:),'linewidth',2)
         ylim([0.2,0.8])
-        title([miceopt{midx} ' nr left ' num2str(nrleft) ', nr right ' num2str(nrright)]) %num2str(minntrials(midx))
+        title([miceopt{midx} ' nr hit ' num2str(nrhit) ', nr error ' num2str(nrerror)]) %num2str(minntrials(midx))
         xlabel('Timewindow')
         ylabel('auROC')
         hold on
@@ -199,8 +199,102 @@ plot(xlim,[0.5,0.5])
 
 
 
-% 
-% %% plot bargraph
+%% only plot decoding performance as difference from .5
+
+yhalf = 0.5*ones(size(avgtmpbilateral));
+ydif = yhalf-avgtmpbilateral;
+ydif = abs(ydif);
+ydif = ydif+0.5;
+yavgdiff = squeeze(nanmean(ydif,1));
+x = 1:length(TW);
+errorrr = squeeze(std(ydif,1));
+
+
+
+% just take a couple of regions
+figure
+regions = [11,25,26,38];
+reg = find(ismember(regio2take,regions));
+for regionidx = reg
+    errorbar(x,yavgdiff(:,regionidx),errorrr(:,regionidx),'color',C(regionidx,:),'linewidth',3)
+%     ylim([0.3,0.7])
+    
+    hold on
+end
+xlim=get(gca,'xlim');
+plot(xlim,[0.5,0.5])
+legend(BrainModel{midx}.Model.Rnames{regions})
+hold off
+
+ 
+%plot bargraph
+yy = yavgdiff(:,ismember(regio2take,regions));
+erry = errorrr(:,ismember(regio2take,regions));
+h = barwitherr(erry,yy);
+xlabel('TimeWindow')
+ylabel('AUC')
+legend(BrainModel{midx}.Model.Rnames{regions})
+ylim([0.5,0.9])
+set(gca,'XTickLabel',{num2str(TW{1}),num2str(TW{2}),num2str(TW{3}),num2str(TW{4}),num2str(TW{5}),num2str(TW{6})})
+set(h(1),'FaceColor',C(ismember(regio2take,regions(1)),:));
+set(h(2),'FaceColor',C(ismember(regio2take,regions(2)),:));
+set(h(3),'FaceColor',C(ismember(regio2take,regions(3)),:));
+set(h(4),'FaceColor',C(ismember(regio2take,regions(4)),:));
+
+xlim=get(gca,'xlim');
+hold on
+plot(xlim,[0.5,0.5])
+% set(gca,'FaceColor,',C(ismember(regio2take,regions)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ %% plot bargraph
 % 
 %       
 % 
