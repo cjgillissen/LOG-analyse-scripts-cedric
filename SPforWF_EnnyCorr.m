@@ -4,7 +4,7 @@ global UserQuestions
 paths = info.paths;
 logs = info.logs;
 nrMouse = length(miceopt);
-removebias = 1;
+removebias = 0;
 biaswindow = 15;
 
 %% USER INPUT

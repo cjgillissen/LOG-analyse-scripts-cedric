@@ -4,7 +4,7 @@ global UserQuestions
 paths = info.paths;
 logs = info.logs;
 nrMouse = length(miceopt);
-biasremoval = 1;
+biasremoval = 0;
 biaswindow = 15;
 %% USER INPUT
 nback = 20;
@@ -308,6 +308,7 @@ for midx = 1:nrMouse %For this mouse
                                 end
                              
                                 hitdattmp = squeeze(nanmean(hitdattmp,3));
+                                hitdattmp = imgaussfilt(hitdattmp,3);
                                 hitdat = cat(3,hitdat,hitdattmp);
                                 end
                                 
@@ -354,6 +355,7 @@ for midx = 1:nrMouse %For this mouse
                                 end
                                 
                                 errodattmp = squeeze(nanmean(errodattmp,3));
+                                errodattmp = imgaussfilt(errodattmp,3);
                                 errordat = cat(3,errordat,errodattmp);
                                 end
                                 
