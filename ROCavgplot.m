@@ -187,10 +187,10 @@ ylabel('AUC')
 legend(BrainModel{midx}.Model.Rnames{regions})
 ylim([0.3,0.7])
 set(gca,'XTickLabel',{num2str(TW{1}),num2str(TW{2}),num2str(TW{3}),num2str(TW{4}),num2str(TW{5}),num2str(TW{6})})
-set(h(1),'FaceColor',C(ismember(regio2take,regions(1)),:));
-set(h(2),'FaceColor',C(ismember(regio2take,regions(2)),:));
-set(h(3),'FaceColor',C(ismember(regio2take,regions(3)),:));
-set(h(4),'FaceColor',C(ismember(regio2take,regions(4)),:));
+% set(h(1),'FaceColor',C(ismember(regio2take,regions(1)),:));
+% set(h(2),'FaceColor',C(ismember(regio2take,regions(2)),:));
+% set(h(3),'FaceColor',C(ismember(regio2take,regions(3)),:));
+% set(h(4),'FaceColor',C(ismember(regio2take,regions(4)),:));
 
 xlim=get(gca,'xlim');
 hold on
@@ -226,7 +226,6 @@ plot(xlim,[0.5,0.5])
 legend(BrainModel{midx}.Model.Rnames{regions})
 hold off
 
- 
 %plot bargraph
 yy = yavgdiff(:,ismember(regio2take,regions));
 erry = errorrr(:,ismember(regio2take,regions));
@@ -234,13 +233,13 @@ h = barwitherr(erry,yy);
 xlabel('TimeWindow')
 ylabel('AUC')
 legend(BrainModel{midx}.Model.Rnames{regions})
-ylim([0.5,0.9])
+ylim([0.5,0.8])
 set(gca,'XTickLabel',{num2str(TW{1}),num2str(TW{2}),num2str(TW{3}),num2str(TW{4}),num2str(TW{5}),num2str(TW{6})})
-set(h(1),'FaceColor',C(ismember(regio2take,regions(1)),:));
-set(h(2),'FaceColor',C(ismember(regio2take,regions(2)),:));
-set(h(3),'FaceColor',C(ismember(regio2take,regions(3)),:));
-set(h(4),'FaceColor',C(ismember(regio2take,regions(4)),:));
-
+% set(h(1),'FaceColor',C(ismember(regio2take,regions(1)),:));
+% set(h(2),'FaceColor',C(ismember(regio2take,regions(2)),:));
+% set(h(3),'FaceColor',C(ismember(regio2take,regions(3)),:));
+% set(h(4),'FaceColor',C(ismember(regio2take,regions(4)),:));
+% set(h(5),'FaceColor',C(ismember(regio2take,regions(5)),:));
 xlim=get(gca,'xlim');
 hold on
 plot(xlim,[0.5,0.5])
